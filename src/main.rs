@@ -1,12 +1,7 @@
 use hidapi::HidApi;
 use std::{mem::zeroed, thread, time::Duration};
 use windows::{
-    Data::Xml::Dom::*, UI::Notifications::*, Win32::Foundation::*, Win32::System::Threading::*,
-    Win32::UI::WindowsAndMessaging::*, core::*,
-};
-
-use windows::{
-    Win32::System::Com::*, Win32::System::Variant::*, Win32::UI::Shell::*,
+    Data::Xml::Dom::*, UI::Notifications::*, Win32::Foundation::*, Win32::UI::Shell::*,
     Win32::UI::WindowsAndMessaging::*, core::*,
 };
 
@@ -40,39 +35,47 @@ fn show_toast(title: &str, message: &str) {
     notifier.Show(&toast).unwrap();
 }
 
-fn show_balloon(title: &str, message: &str) {
-    unsafe {
-        let mut nid = NOTIFYICONDATAW {
-            cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
-            hWnd: HWND(std::ptr::null_mut()),
-            uID: 1,
-            uFlags: NIF_INFO,
-            szInfo: {
-                let mut buf = [0u16; 256];
-                let s: Vec<u16> = message.encode_utf16().collect();
-                buf[..s.len()].copy_from_slice(&s);
-                buf
-            },
-            szInfoTitle: {
-                let mut buf = [0u16; 64];
-                let s: Vec<u16> = title.encode_utf16().collect();
-                buf[..s.len()].copy_from_slice(&s);
-                buf
-            },
-            dwInfoFlags: NIIF_INFO,
-            ..zeroed()
-        };
+unsafe fn add_tray_icon() -> NOTIFYICONDATAW {
+    let mut nid: NOTIFYICONDATAW = zeroed();
+    nid.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;
+    nid.hWnd = HWND(std::ptr::null_mut());
+    nid.uID = 1;
+    nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+    nid.uCallbackMessage = WM_USER + 1;
+    nid.hIcon = LoadIconW(Some(HINSTANCE(std::ptr::null_mut())), IDI_APPLICATION)
+        .expect("Failed to load icon");
 
-        let success = Shell_NotifyIconW(NIM_MODIFY, &mut nid);
-        if !success.as_bool() {
-            eprintln!("Failed to show balloon");
-        }
+    let tip = "PS Battery";
+    let tip_u16: Vec<u16> = tip.encode_utf16().collect();
+    nid.szTip[..tip_u16.len()].copy_from_slice(&tip_u16);
+
+    let success = Shell_NotifyIconW(NIM_ADD, &mut nid);
+    if !success.as_bool() {
+        eprintln!("Failed to add tray icon");
+    } else {
+        show_balloon(&mut nid, "PS Battery", "Monitoring started");
+    }
+
+    nid
+}
+
+unsafe fn show_balloon(nid: &mut NOTIFYICONDATAW, title: &str, message: &str) {
+    nid.uFlags = NIF_INFO;
+    let msg_u16: Vec<u16> = message.encode_utf16().collect();
+    nid.szInfo[..msg_u16.len()].copy_from_slice(&msg_u16);
+    let title_u16: Vec<u16> = title.encode_utf16().collect();
+    nid.szInfoTitle[..title_u16.len()].copy_from_slice(&title_u16);
+    nid.dwInfoFlags = NIIF_INFO;
+
+    let success = Shell_NotifyIconW(NIM_MODIFY, nid);
+    if !success.as_bool() {
+        eprintln!("Failed to show balloon");
     }
 }
 
 fn main() {
-    show_balloon("balloon", "message");
-    show_toast("toast", "message");
+    let mut nid = unsafe { add_tray_icon() };
+    show_toast("PS Battery", "Monitoring started");
 
     loop {
         let api = HidApi::new().expect("Failed to create HID API instance");
@@ -123,14 +126,17 @@ fn main() {
                             percentage
                         ),
                     );
-                    show_balloon(
-                        "Controller Battery Low",
-                        &format!(
-                            "Controller {:04X} battery at {}%",
-                            device_info.product_id(),
-                            percentage
-                        ),
-                    );
+                    unsafe {
+                        show_balloon(
+                            &mut nid,
+                            "Controller Battery Low",
+                            &format!(
+                                "Controller {:04X} battery at {}%",
+                                device_info.product_id(),
+                                percentage
+                            ),
+                        );
+                    }
                 }
             });
 
