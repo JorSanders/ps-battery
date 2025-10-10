@@ -7,3 +7,7 @@ edition = "2024"
 hidapi = "2.6.3"
 notify-rust = "4.11.7"
 tokio = "1.47.1"
+windows = { version = "0.62.2", features = [
+    "UI_Notifications",
+    "Data_Xml_Dom"
+] }
