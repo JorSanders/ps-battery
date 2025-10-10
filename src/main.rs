@@ -35,15 +35,49 @@ fn show_toast(title: &str, message: &str) {
     notifier.Show(&toast).unwrap();
 }
 
-unsafe fn add_tray_icon() -> NOTIFYICONDATAW {
+unsafe fn create_hidden_window(class_name: &HSTRING) -> HWND {
+    let wnd_class = WNDCLASSW {
+        lpfnWndProc: Some(std::mem::transmute::<
+            unsafe fn(HWND, u32, WPARAM, LPARAM) -> LRESULT,
+            unsafe extern "system" fn(HWND, u32, WPARAM, LPARAM) -> LRESULT,
+        >(DefWindowProcW)),
+        hInstance: HINSTANCE::default(),
+        lpszClassName: PCWSTR(class_name.as_ptr()), // up-to-date type
+        ..Default::default()
+    };
+
+    let atom = RegisterClassW(&wnd_class);
+    if atom == 0 {
+        panic!("Failed to register window class");
+    }
+
+    let hwnd = CreateWindowExW(
+        WINDOW_EX_STYLE(0),
+        class_name,
+        &HSTRING::from(""),
+        WS_OVERLAPPEDWINDOW,
+        0,
+        0,
+        0,
+        0,
+        None,
+        None,
+        Some(HINSTANCE::default()),
+        None,
+    )
+    .expect("Failed to create hidden window");
+
+    hwnd
+}
+
+unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let mut nid: NOTIFYICONDATAW = zeroed();
     nid.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;
-    nid.hWnd = HWND(std::ptr::null_mut());
+    nid.hWnd = hwnd;
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
     nid.uCallbackMessage = WM_USER + 1;
-    nid.hIcon = LoadIconW(Some(HINSTANCE(std::ptr::null_mut())), IDI_APPLICATION)
-        .expect("Failed to load icon");
+    nid.hIcon = LoadIconW(None, IDI_APPLICATION).expect("Failed to load icon");
 
     let tip = "PS Battery";
     let tip_u16: Vec<u16> = tip.encode_utf16().collect();
@@ -52,8 +86,6 @@ unsafe fn add_tray_icon() -> NOTIFYICONDATAW {
     let success = Shell_NotifyIconW(NIM_ADD, &mut nid);
     if !success.as_bool() {
         eprintln!("Failed to add tray icon");
-    } else {
-        show_balloon(&mut nid, "PS Battery", "Monitoring started");
     }
 
     nid
@@ -61,10 +93,15 @@ unsafe fn add_tray_icon() -> NOTIFYICONDATAW {
 
 unsafe fn show_balloon(nid: &mut NOTIFYICONDATAW, title: &str, message: &str) {
     nid.uFlags = NIF_INFO;
-    let msg_u16: Vec<u16> = message.encode_utf16().collect();
+
+    let mut msg_u16: Vec<u16> = message.encode_utf16().collect();
+    msg_u16.push(0); // null-terminate
     nid.szInfo[..msg_u16.len()].copy_from_slice(&msg_u16);
-    let title_u16: Vec<u16> = title.encode_utf16().collect();
+
+    let mut title_u16: Vec<u16> = title.encode_utf16().collect();
+    title_u16.push(0); // null-terminate
     nid.szInfoTitle[..title_u16.len()].copy_from_slice(&title_u16);
+
     nid.dwInfoFlags = NIIF_INFO;
 
     let success = Shell_NotifyIconW(NIM_MODIFY, nid);
@@ -74,28 +111,35 @@ unsafe fn show_balloon(nid: &mut NOTIFYICONDATAW, title: &str, message: &str) {
 }
 
 fn main() {
-    let mut nid = unsafe { add_tray_icon() };
-    show_toast("PS Battery", "Monitoring started");
+    unsafe {
+        let class_name = HSTRING::from("PSBatteryHiddenClass");
 
-    loop {
+        let hwnd = create_hidden_window(&class_name);
+        let mut nid = add_tray_icon(hwnd);
+
+        show_toast("Toast", "Monitoring started");
+        show_balloon(&mut nid, "Balloon", "Monitoring started");
+
         let api = HidApi::new().expect("Failed to create HID API instance");
-        let device_list: Vec<_> = api.device_list().collect();
 
-        device_list.iter().for_each(|device| {
-            println!(
-                "VID: {:04X}, PID: {:04X}, Product: {:?}, Manufacturer: {:?}, Serial: {:?}",
-                device.vendor_id(),
-                device.product_id(),
-                device.product_string(),
-                device.manufacturer_string(),
-                device.serial_number()
-            );
-        });
+        loop {
+            let device_list: Vec<_> = api.device_list().collect();
 
-        device_list
-            .iter()
-            .filter(|d| d.vendor_id() == SONY_VID && SONY_PIDS.contains(&d.product_id()))
-            .for_each(|device_info| {
+            for device in &device_list {
+                println!(
+                    "VID: {:04X}, PID: {:04X}, Product: {:?}, Manufacturer: {:?}, Serial: {:?}",
+                    device.vendor_id(),
+                    device.product_id(),
+                    device.product_string(),
+                    device.manufacturer_string(),
+                    device.serial_number()
+                );
+            }
+
+            for device_info in device_list
+                .iter()
+                .filter(|d| d.vendor_id() == SONY_VID && SONY_PIDS.contains(&d.product_id()))
+            {
                 let device = device_info
                     .open_device(&api)
                     .expect("Failed to open device");
@@ -106,7 +150,7 @@ fn main() {
                         "Failed to read controller PID {:04X}",
                         device_info.product_id()
                     );
-                    return;
+                    continue;
                 }
 
                 let battery = buf[BATTERY_OFFSET] & BATTERY_MASK;
@@ -126,20 +170,19 @@ fn main() {
                             percentage
                         ),
                     );
-                    unsafe {
-                        show_balloon(
-                            &mut nid,
-                            "Controller Battery Low",
-                            &format!(
-                                "Controller {:04X} battery at {}%",
-                                device_info.product_id(),
-                                percentage
-                            ),
-                        );
-                    }
+                    show_balloon(
+                        &mut nid,
+                        "Controller Battery Low",
+                        &format!(
+                            "Controller {:04X} battery at {}%",
+                            device_info.product_id(),
+                            percentage
+                        ),
+                    );
                 }
-            });
+            }
 
-        thread::sleep(Duration::from_secs(POLL_INTERVAL_SECS));
+            thread::sleep(Duration::from_secs(POLL_INTERVAL_SECS));
+        }
     }
 }
