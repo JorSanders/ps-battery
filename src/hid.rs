@@ -1,12 +1,13 @@
-use crate::{sound::*, toast::*, tray::*};
+use crate::{sound::*, tray::*};
 use hidapi::HidApi;
+use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
 const SONY_VID: u16 = 0x054C;
 const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
 const USB_BATTERY_OFFSET: usize = 53; // wired
 const BT_BATTERY_OFFSET: usize = 54; // wireless Classic BT
 
-pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
+pub fn check_controllers(nid: &mut NOTIFYICONDATAW) {
     let api = HidApi::new().expect("Failed to create HID API instance");
 
     for device_info in api.device_list() {
@@ -68,16 +69,28 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
 
         let raw = buf[offset];
 
-        // Go logic: extract power level and state
+        // Determine battery and charging
         let (percentage, charging) = if is_bt {
-            let level = raw & 0x0F;
-            let state = (raw & 0xF0) >> 4;
-            let percent = match state {
-                0x02 => 100,                      // Complete
-                _ => (level as u32 * 100 / 0x0A), // scale 0–0x0A to 0–100%
-            };
-            let is_charging = state == 0x01;
-            (percent as u8, is_charging)
+            match device_info.product_id() {
+                0x0CE6 => {
+                    // Regular DualSense
+                    let level = raw & 0x0F;
+                    let state = (raw & 0xF0) >> 4;
+                    let pct = match state {
+                        0x02 => 100,             // Full
+                        _ => (level as u8 * 10), // 0–10 scale → 0–100
+                    };
+                    let is_charging = state == 0x01; // 1 = charging
+                    (pct, is_charging)
+                }
+                0x0DF2 => {
+                    // DualSense Edge (Bluetooth)
+                    let level = raw & 0x0F; // 0–4
+                    let pct = (level as u8) * 20; // map to 0,20,40,60,80,100
+                    (pct, false)
+                }
+                _ => (0, false),
+            }
         } else {
             // Wired USB
             let level = raw & 0x0F;
