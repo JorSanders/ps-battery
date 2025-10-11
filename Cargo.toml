@@ -5,7 +5,9 @@ edition = "2024"
 
 [dependencies]
 hidapi = "2.6.3"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+futures = "0.3"
+btleplug = "0.11"
 
 [dependencies.windows]
 version = "0.62"
