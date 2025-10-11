@@ -3,8 +3,7 @@ use hidapi::HidApi;
 
 const SONY_VID: u16 = 0x054C;
 const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
-const USB_BATTERY_OFFSET: usize = 53; // wired
-const BT_BATTERY_OFFSET: usize = 54; // wireless Classic BT
+const USB_BATTERY_OFFSET: usize = 53;
 
 pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
     let api = HidApi::new().expect("Failed to create HID API instance");
@@ -26,11 +25,6 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
         println!("Path: {}", path_str);
         println!("Detected as Bluetooth? {}", is_bt);
 
-        let offset = if is_bt {
-            BT_BATTERY_OFFSET
-        } else {
-            USB_BATTERY_OFFSET
-        };
         let buf_size = if is_bt { 78 } else { 64 };
 
         let device = match device_info.open_device(&api) {
@@ -47,64 +41,42 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
                 println!("Read {} bytes from device", n);
                 println!("Full report: {:?}", &buf[..n]);
             }
-            Ok(_) => {
-                println!("Read 0 bytes from device");
-                continue;
-            }
+            Ok(_) => continue,
             Err(e) => {
                 println!("Failed to read HID report: {:?}", e);
                 continue;
             }
         }
 
-        if offset >= buf.len() {
-            println!(
-                "Offset {} out of bounds for report length {}",
-                offset,
-                buf.len()
-            );
-            continue;
-        }
-
-        let raw = buf[offset];
-
-        // Go logic: extract power level and state
-        let (percentage, charging) = if is_bt {
-            match device_info.product_id() {
-                0x0CE6 => {
-                    // Regular DualSense
-                    let level = raw & 0x0F;
-                    let state = (raw & 0xF0) >> 4;
-                    let pct = match state {
-                        0x02 => 100,             // Full
-                        _ => (level as u8 * 10), // 0–10 scale → 0–100
-                    };
-                    let is_charging = state == 0x01; // 1 = charging
-                    (pct, is_charging)
-                }
-                0x0DF2 => {
-                    // DualSense Edge (Bluetooth)
-                    let level = raw & 0x0F;
-                    let state = (raw & 0xF0) >> 4;
-                    let percent = match state {
-                        0x02 => 100,                      // Complete
-                        _ => (level as u32 * 100 / 0x0A), // scale 0–0x0A to 0–100%
-                    };
-                    let is_charging = state == 0x01;
-                    (percent as u8, is_charging)
-                }
-                _ => (0, false),
-            }
+        let (percentage, charging) = if is_bt && buf.len() > 56 && buf[0] == 0x31 {
+            let level = buf[54].min(10);
+            let state = buf[55];
+            let pct = match level {
+                0 => 0,
+                1 => 10,
+                2 => 20,
+                3 => 30,
+                4 => 40,
+                5 => 50,
+                6 => 60,
+                7 => 70,
+                8 => 80,
+                9 => 90,
+                _ => 100,
+            };
+            let is_charging = (state & 0x10) != 0;
+            println!("Parsed from BT report: level={}, state={}", level, state);
+            (pct, is_charging)
         } else {
-            // Wired USB
+            let raw = buf[USB_BATTERY_OFFSET];
             let level = raw & 0x0F;
             let is_charging = (raw & 0x10) != 0;
             (level * 10, is_charging)
         };
 
         println!(
-            "Battery percentage: {}%, charging: {} (raw byte: {})",
-            percentage, charging, raw
+            "Battery percentage: {}%, charging: {}",
+            percentage, charging
         );
 
         if percentage <= 30 && !charging && false {
@@ -123,6 +95,3 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
         }
     }
 }
-
-//Full report: [1, 128, 128, 129, 135, 8, 0, 36, 0, 0, 0, 0, 0, 12, 189, 176, 45, 0, 0, 253, 255, 253, 255, 246, 255, 88, 31, 203, 4, 248, 13, 39, 85, 16, 128, 0, 0, 0, 128, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 164, 23, 39, 85, 7, 0, 0, 6, 82, 31, 5, 148, 93, 126, 30, 0, 99, 0, 0, 0, 0, 0, 0, 0, 102, 192, 63, 198]
-//Full report: [1, 128, 128, 129, 135, 8, 0, 0, 0, 0, 0, 0, 0, 12, 189, 176, 45, 0, 0, 253, 255, 253, 255, 246, 255, 88, 31, 203, 4, 248, 13, 39, 85, 16, 128, 0, 0, 0, 128, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 164, 23, 39, 85, 7, 0, 0, 6, 82, 31, 5, 148, 93, 126, 30, 0, 99, 0, 0, 0, 0, 0, 0, 0, 102, 192, 63, 198]
