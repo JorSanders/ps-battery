@@ -8,10 +8,8 @@ use windows::{
 
 const SONY_VID: u16 = 0x054C;
 const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
-const BUFFER_SIZE: usize = 64;
 const BATTERY_OFFSET: usize = 53;
-const BATTERY_MASK: u8 = 0b00001111;
-const POLL_INTERVAL_SECS: u64 = 60;
+const POLL_INTERVAL_SECS: u64 = 300;
 
 fn show_toast(title: &str, message: &str) {
     let toast_xml =
@@ -163,7 +161,7 @@ fn main() {
                 let device = device_info
                     .open_device(&api)
                     .expect("Failed to open device");
-                let mut buf = [0u8; BUFFER_SIZE];
+                let mut buf = [0u8; 64];
 
                 if device.read_timeout(&mut buf, 200).is_err() {
                     println!(
@@ -173,7 +171,7 @@ fn main() {
                     return;
                 }
 
-                let battery = buf[BATTERY_OFFSET] & BATTERY_MASK;
+                let battery = buf[BATTERY_OFFSET] & 0b00001111;
                 let percentage = battery * 10;
                 println!(
                     "Controller PID {:04X} battery: {}%",
