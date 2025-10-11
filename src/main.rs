@@ -1,5 +1,6 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod controller;
 mod hid;
 mod sound;
 mod toast;
@@ -30,7 +31,7 @@ fn main() {
                 }
                 let result = TranslateMessage(&msg);
                 if !result.as_bool() {
-                    eprintln!("Failedl to translate message")
+                    eprintln!("Failed to translate message")
                 }
                 DispatchMessageW(&msg);
             }

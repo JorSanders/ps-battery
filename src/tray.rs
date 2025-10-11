@@ -2,6 +2,8 @@ use windows::{
     Win32::Foundation::*, Win32::UI::Shell::*, Win32::UI::WindowsAndMessaging::*, core::*,
 };
 
+use crate::controller::get_controllers;
+
 const WM_TRAYICON: u32 = WM_USER + 1;
 const ID_EXIT: u16 = 1;
 
@@ -14,7 +16,27 @@ unsafe extern "system" fn wnd_proc(
     if msg == WM_TRAYICON && lparam.0 as u32 == WM_RBUTTONUP {
         unsafe {
             let h_menu = CreatePopupMenu().expect("Failed to create menu");
-            AppendMenuW(h_menu, MF_STRING, ID_EXIT as usize, w!("Exit")).expect("Failed to append");
+
+            for c in get_controllers() {
+                let line = format!(
+                    "{}: {}% ({})",
+                    c.name,
+                    c.battery,
+                    if c.charging {
+                        "charging"
+                    } else {
+                        "not charging"
+                    }
+                );
+                let text: Vec<u16> = line.encode_utf16().chain(std::iter::once(0)).collect();
+                AppendMenuW(h_menu, MF_STRING | MF_GRAYED, 0, PCWSTR(text.as_ptr()))
+                    .expect("Failed to append controller info");
+            }
+
+            AppendMenuW(h_menu, MF_SEPARATOR, 0, PCWSTR::null()).expect("Failed separator");
+            AppendMenuW(h_menu, MF_STRING, ID_EXIT as usize, w!("Exit"))
+                .expect("Failed to append Exit");
+
             let mut p = POINT::default();
             let _ = GetCursorPos(&mut p);
             let _ = SetForegroundWindow(hwnd);

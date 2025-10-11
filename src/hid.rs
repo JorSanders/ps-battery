@@ -1,4 +1,4 @@
-use crate::{sound::*, toast::*, tray::*};
+use crate::{controller::*, sound::*, toast::*, tray::*};
 use hidapi::HidApi;
 
 const SONY_VID: u16 = 0x054C;
@@ -8,6 +8,7 @@ const BT_BATTERY_OFFSET: usize = 54;
 
 pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
     let api = HidApi::new().expect("Failed to create HID API instance");
+    let mut statuses = Vec::new();
 
     for device_info in api.device_list() {
         if device_info.vendor_id() != SONY_VID || !SONY_PIDS.contains(&device_info.product_id()) {
@@ -71,6 +72,12 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
             if charging { "charging" } else { "not charging" }
         );
 
+        statuses.push(ControllerStatus {
+            name: name.to_string(),
+            battery: percentage,
+            charging,
+        });
+
         if !charging {
             let alert = if percentage <= 10 {
                 Some(AlertSound::Critical)
@@ -95,4 +102,6 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
             }
         }
     }
+
+    set_controllers(statuses);
 }
