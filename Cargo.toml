@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 hidapi = "2.6.3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 
 [dependencies.windows]
 version = "0.62"
@@ -16,4 +17,7 @@ features = [
     "Win32_Graphics_Gdi",
     "Win32_Media_Audio",
     "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_Devices_Bluetooth",
+    "Win32_System_WindowsProgramming",
 ]
