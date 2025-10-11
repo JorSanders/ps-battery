@@ -1,13 +1,42 @@
 use crate::{controller::*, sound::*, toast::*, tray::*};
 use hidapi::HidApi;
+use std::collections::HashMap;
+use std::io::{self, Write};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
+use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
 const SONY_VID: u16 = 0x054C;
-const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
+const SONY_PIDS: [u16; 4] = [0x0CE6, 0x0DF2, 0x05C4, 0x09CC];
 const USB_BATTERY_OFFSET: usize = 53;
 const BT_BATTERY_OFFSET: usize = 54;
 
-pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
-    let api = HidApi::new().expect("Failed to create HID API instance");
+static HID: OnceLock<Mutex<HidApi>> = OnceLock::new();
+static LAST_ALERTS: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
+static LAST_SEEN: OnceLock<Mutex<HashMap<String, (u8, bool)>>> = OnceLock::new();
+static LOG_TIMER: OnceLock<Mutex<Instant>> = OnceLock::new();
+
+const ALERT_INTERVAL: Duration = Duration::from_secs(300);
+const LOG_INTERVAL: Duration = Duration::from_secs(10);
+
+pub fn check_controllers(nid: &mut NOTIFYICONDATAW) {
+    let now = Instant::now();
+    let log_timer = LOG_TIMER.get_or_init(|| Mutex::new(now - LOG_INTERVAL));
+    let mut last_log = log_timer.lock().unwrap();
+    let should_log = now.duration_since(*last_log) >= LOG_INTERVAL;
+
+    let hid = HID.get_or_init(|| {
+        let api = HidApi::new().expect("hidapi init failed");
+        Mutex::new(api)
+    });
+    let mut api = hid.lock().unwrap();
+    let _ = api.refresh_devices();
+
+    let alerts = LAST_ALERTS.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut alerts_lock = alerts.lock().unwrap();
+    let cache = LAST_SEEN.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut cache_lock = cache.lock().unwrap();
+
     let mut statuses = Vec::new();
 
     for device_info in api.device_list() {
@@ -15,7 +44,10 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
             continue;
         }
 
-        let name = device_info.product_string().unwrap_or("Unknown");
+        let name = device_info
+            .product_string()
+            .unwrap_or("Unknown")
+            .to_string();
         let path_str = device_info.path().to_string_lossy();
         let is_bt = path_str
             .to_ascii_uppercase()
@@ -30,77 +62,104 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
 
         let device = match device_info.open_device(&api) {
             Ok(d) => d,
-            Err(_) => continue,
+            Err(_) => {
+                if let Some((b, c)) = cache_lock.get(&name) {
+                    statuses.push(ControllerStatus {
+                        name: name.clone(),
+                        battery: *b,
+                        charging: *c,
+                    });
+                }
+                continue;
+            }
         };
+
+        let _ = device.set_blocking_mode(false);
 
         let mut buf = vec![0u8; buf_size];
-        if device.read_timeout(&mut buf, 500).unwrap_or(0) == 0 {
-            continue;
-        }
+        let n = device.read_timeout(&mut buf, 1).unwrap_or(0);
 
-        if offset >= buf.len() {
-            continue;
-        }
-
-        let raw = buf[offset];
-
-        let percentage = if is_bt {
-            let level = raw & 0x0F;
-            let state = (raw & 0xF0) >> 4;
-            match state {
-                0x02 => 100,
-                _ => (level as u32 * 100 / 0x0A) as u8,
+        let (percentage, charging) = if n == 0 || offset >= buf.len() {
+            match cache_lock.get(&name) {
+                Some((b, c)) => (*b, *c),
+                None => continue,
             }
         } else {
-            (raw & 0x0F) * 10
+            let raw = buf[offset];
+            let percentage = if is_bt {
+                let level = raw & 0x0F;
+                let state = (raw & 0xF0) >> 4;
+                if state == 0x02 {
+                    100
+                } else {
+                    (level as u32 * 100 / 0x0A) as u8
+                }
+            } else {
+                (raw & 0x0F) * 10
+            };
+            let charging = if is_bt {
+                buf.len() > 55 && buf[0] == 0x31 && (buf[55] & 0x10) != 0
+            } else {
+                let mut feat = [0u8; 64];
+                device
+                    .get_feature_report(&mut feat)
+                    .map(|_| (feat[4] & 0x10) != 0 || (feat[5] & 0x10) != 0)
+                    .unwrap_or(false)
+            };
+            cache_lock.insert(name.clone(), (percentage, charging));
+            (percentage, charging)
         };
-
-        let charging = if is_bt {
-            buf.len() > 55 && buf[0] == 0x31 && (buf[55] & 0x10) != 0
-        } else {
-            let mut feat = [0u8; 64];
-            device
-                .get_feature_report(&mut feat)
-                .map(|_| (feat[4] & 0x10) != 0 || (feat[5] & 0x10) != 0)
-                .unwrap_or(false)
-        };
-
-        println!(
-            "{}: {}% ({})",
-            name,
-            percentage,
-            if charging { "charging" } else { "not charging" }
-        );
 
         statuses.push(ControllerStatus {
-            name: name.to_string(),
+            name: name.clone(),
             battery: percentage,
             charging,
         });
 
         if !charging {
-            let alert = if percentage <= 10 {
-                Some(AlertSound::Critical)
-            } else if percentage <= 20 {
-                Some(AlertSound::Exclamation)
-            } else if percentage <= 30 {
-                Some(AlertSound::Notify)
-            } else {
-                None
+            let due = match alerts_lock.get(&name) {
+                Some(last) => now.duration_since(*last) >= ALERT_INTERVAL,
+                None => true,
             };
-
-            if let Some(sound) = alert {
-                play_sound(sound);
-
-                if false {
-                    show_toast(&name, &format!("Battery at {}%", percentage));
-                }
-
-                unsafe {
-                    show_balloon(nid, &name, &format!("Battery at {}%", percentage));
+            if due {
+                let alert = if percentage <= 10 {
+                    Some(AlertSound::Critical)
+                } else if percentage <= 20 {
+                    Some(AlertSound::Exclamation)
+                } else if percentage <= 30 {
+                    Some(AlertSound::Notify)
+                } else {
+                    None
+                };
+                if let Some(sound) = alert {
+                    play_sound(sound);
+                    if false {
+                        show_toast(&name, &format!("Battery at {}%", percentage));
+                    }
+                    unsafe {
+                        show_balloon(nid, &name, &format!("Battery at {}%", percentage));
+                    }
+                    alerts_lock.insert(name.clone(), now);
                 }
             }
         }
+    }
+
+    if should_log {
+        for c in &statuses {
+            println!(
+                "{}: {}% ({})",
+                c.name,
+                c.battery,
+                if c.charging {
+                    "charging"
+                } else {
+                    "not charging"
+                }
+            );
+        }
+        let _ = io::stdout().flush();
+        *last_log = now;
     }
 
     set_controllers(statuses);
