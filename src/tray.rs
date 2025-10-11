@@ -2,12 +2,43 @@ use windows::{
     Win32::Foundation::*, Win32::UI::Shell::*, Win32::UI::WindowsAndMessaging::*, core::*,
 };
 
+const WM_TRAYICON: u32 = WM_USER + 1;
+const ID_EXIT: u16 = 1;
+
 unsafe extern "system" fn wnd_proc(
     hwnd: HWND,
     msg: u32,
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
+    if msg == WM_TRAYICON && lparam.0 as u32 == WM_RBUTTONUP {
+        unsafe {
+            let h_menu = CreatePopupMenu().expect("Failed to create menu");
+            AppendMenuW(h_menu, MF_STRING, ID_EXIT as usize, w!("Exit")).expect("Failed to append");
+            let mut p = POINT::default();
+            let _ = GetCursorPos(&mut p);
+            let _ = SetForegroundWindow(hwnd);
+            let _ = TrackPopupMenu(h_menu, TPM_RIGHTBUTTON, p.x, p.y, Some(0), hwnd, None);
+            DestroyMenu(h_menu).expect("Failed to destroy menu");
+        }
+        return LRESULT(0);
+    }
+
+    if msg == WM_COMMAND {
+        let id = (wparam.0 & 0xFFFF) as u16;
+        if id == ID_EXIT {
+            unsafe {
+                let mut nid = NOTIFYICONDATAW::default();
+                nid.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;
+                nid.hWnd = hwnd;
+                nid.uID = 1;
+                let _ = Shell_NotifyIconW(NIM_DELETE, &mut nid);
+                PostQuitMessage(0);
+            }
+            return LRESULT(0);
+        }
+    }
+
     unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) }
 }
 
@@ -49,7 +80,7 @@ pub unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     nid.hWnd = hwnd;
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-    nid.uCallbackMessage = WM_USER + 1;
+    nid.uCallbackMessage = WM_TRAYICON;
 
     unsafe {
         nid.hIcon = LoadIconW(None, IDI_APPLICATION).expect("Failed to load icon");
