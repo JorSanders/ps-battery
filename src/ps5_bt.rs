@@ -29,15 +29,14 @@ pub fn list_paired_bluetooth_devices() {
         let mut h_find = h_find;
 
         loop {
-            let name = String::from_utf16_lossy(&device_info.szName)
-                .trim_end_matches('\0')
-                .to_string();
-            let connected = if device_info.fConnected.as_bool() {
-                "Connected"
-            } else {
-                "Disconnected"
-            };
-            println!("{name} - {connected}");
+            if device_info.fConnected.as_bool() {
+                let name = String::from_utf16_lossy(&device_info.szName)
+                    .trim_end_matches('\0')
+                    .to_string();
+                if name.contains("Wireless Controller") || name.contains("PS5 Edge") {
+                    println!("Connected PS5 controller: {name}");
+                }
+            }
 
             let mut next_device = BLUETOOTH_DEVICE_INFO {
                 dwSize: std::mem::size_of::<BLUETOOTH_DEVICE_INFO>() as u32,

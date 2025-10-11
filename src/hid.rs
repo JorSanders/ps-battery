@@ -43,14 +43,14 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
         }
 
         if battery <= 3 {
-            show_toast(
-                "Controller Battery Low",
-                &format!(
-                    "Controller {:04X} battery at {}%",
-                    device_info.product_id(),
-                    percentage
-                ),
-            );
+            // show_toast(
+            //     "Controller Battery Low",
+            //     &format!(
+            //         "Controller {:04X} battery at {}%",
+            //         device_info.product_id(),
+            //         percentage
+            //     ),
+            // );
             unsafe {
                 show_balloon(
                     nid,
