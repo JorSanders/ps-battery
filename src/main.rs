@@ -1,5 +1,6 @@
 use hidapi::HidApi;
 use std::{thread, time::Duration};
+use windows::Win32::Media::Audio::*;
 use windows::{
     UI::Notifications::*, Win32::Foundation::*, Win32::UI::Shell::*,
     Win32::UI::WindowsAndMessaging::*, core::*,
@@ -33,6 +34,29 @@ fn show_toast(title: &str, message: &str) {
     let notifier =
         ToastNotificationManager::CreateToastNotifierWithId(&HSTRING::from("ps-battery")).unwrap();
     notifier.Show(&toast).unwrap();
+}
+
+enum AlertSound {
+    Notify,
+    Exclamation,
+    Critical,
+}
+
+fn play_sound(alert: AlertSound) {
+    let file_path = match alert {
+        AlertSound::Notify => r"C:\Windows\Media\Windows Notify System Generic.wav",
+        AlertSound::Exclamation => r"C:\Windows\Media\Windows Exclamation.wav",
+        AlertSound::Critical => r"C:\Windows\Media\Windows Critical Stop.wav",
+    };
+
+    let path: Vec<u16> = file_path.encode_utf16().chain(Some(0)).collect();
+    let result: BOOL;
+    unsafe {
+        result = PlaySoundW(PCWSTR(path.as_ptr()), None, SND_FILENAME | SND_ASYNC);
+    }
+    if !result.as_bool() {
+        eprintln!("Failed to play sound: {}", file_path);
+    }
 }
 
 unsafe extern "system" fn wnd_proc(
@@ -93,8 +117,6 @@ unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let success = unsafe { Shell_NotifyIconW(NIM_ADD, &mut nid) };
     if !success.as_bool() {
         eprintln!("Failed to add tray icon");
-    } else {
-        unsafe { show_balloon(&mut nid, "Balloon", "Monitoring started") };
     }
 
     nid
@@ -118,7 +140,6 @@ fn main() {
     let class_name = HSTRING::from("PSBatteryHiddenWindow");
     let hwnd = unsafe { create_hidden_window(&class_name) };
     let mut nid = unsafe { add_tray_icon(hwnd) };
-    show_toast("Toast", "Monitoring started");
 
     loop {
         let api = HidApi::new().expect("Failed to create HID API instance");
@@ -160,7 +181,15 @@ fn main() {
                     percentage
                 );
 
-                if battery <= 2 {
+                if battery == 3 {
+                    play_sound(AlertSound::Notify);
+                } else if battery == 2 {
+                    play_sound(AlertSound::Exclamation);
+                } else if battery == 1 {
+                    play_sound(AlertSound::Critical)
+                }
+
+                if battery <= 3 {
                     show_toast(
                         "Controller Battery Low",
                         &format!(
