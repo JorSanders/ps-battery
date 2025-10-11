@@ -70,14 +70,31 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
 
         // Go logic: extract power level and state
         let (percentage, charging) = if is_bt {
-            let level = raw & 0x0F;
-            let state = (raw & 0xF0) >> 4;
-            let percent = match state {
-                0x02 => 100,                      // Complete
-                _ => (level as u32 * 100 / 0x0A), // scale 0–0x0A to 0–100%
-            };
-            let is_charging = state == 0x01;
-            (percent as u8, is_charging)
+            match device_info.product_id() {
+                0x0CE6 => {
+                    // Regular DualSense
+                    let level = raw & 0x0F;
+                    let state = (raw & 0xF0) >> 4;
+                    let pct = match state {
+                        0x02 => 100,             // Full
+                        _ => (level as u8 * 10), // 0–10 scale → 0–100
+                    };
+                    let is_charging = state == 0x01; // 1 = charging
+                    (pct, is_charging)
+                }
+                0x0DF2 => {
+                    // DualSense Edge (Bluetooth)
+                    let level = raw & 0x0F;
+                    let state = (raw & 0xF0) >> 4;
+                    let percent = match state {
+                        0x02 => 100,                      // Complete
+                        _ => (level as u32 * 100 / 0x0A), // scale 0–0x0A to 0–100%
+                    };
+                    let is_charging = state == 0x01;
+                    (percent as u8, is_charging)
+                }
+                _ => (0, false),
+            }
         } else {
             // Wired USB
             let level = raw & 0x0F;
@@ -90,7 +107,7 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
             percentage, charging, raw
         );
 
-        if percentage <= 30 {
+        if percentage <= 30 && !charging && false {
             play_sound(AlertSound::Notify);
             unsafe {
                 show_balloon(
@@ -106,3 +123,6 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
         }
     }
 }
+
+//Full report: [1, 128, 128, 129, 135, 8, 0, 36, 0, 0, 0, 0, 0, 12, 189, 176, 45, 0, 0, 253, 255, 253, 255, 246, 255, 88, 31, 203, 4, 248, 13, 39, 85, 16, 128, 0, 0, 0, 128, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 164, 23, 39, 85, 7, 0, 0, 6, 82, 31, 5, 148, 93, 126, 30, 0, 99, 0, 0, 0, 0, 0, 0, 0, 102, 192, 63, 198]
+//Full report: [1, 128, 128, 129, 135, 8, 0, 0, 0, 0, 0, 0, 0, 12, 189, 176, 45, 0, 0, 253, 255, 253, 255, 246, 255, 88, 31, 203, 4, 248, 13, 39, 85, 16, 128, 0, 0, 0, 128, 0, 0, 0, 0, 9, 9, 0, 0, 0, 0, 0, 164, 23, 39, 85, 7, 0, 0, 6, 82, 31, 5, 148, 93, 126, 30, 0, 99, 0, 0, 0, 0, 0, 0, 0, 102, 192, 63, 198]

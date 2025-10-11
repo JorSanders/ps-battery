@@ -8,7 +8,7 @@ use hid::*;
 use std::{thread, time::Duration};
 use tray::*;
 
-const POLL_INTERVAL_SECS: u64 = 300;
+const POLL_INTERVAL_SECS: u64 = 5;
 
 fn main() {
     let class_name = windows::core::HSTRING::from("PSBatteryHiddenWindow");
