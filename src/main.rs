@@ -1,5 +1,4 @@
 mod hid;
-mod ps5_bt;
 mod sound;
 mod toast;
 mod tray;
