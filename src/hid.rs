@@ -4,6 +4,7 @@ use hidapi::HidApi;
 const SONY_VID: u16 = 0x054C;
 const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
 const USB_BATTERY_OFFSET: usize = 53;
+const BT_BATTERY_OFFSET: usize = 54;
 
 pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
     let api = HidApi::new().expect("Failed to create HID API instance");
@@ -25,6 +26,11 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
         println!("Path: {}", path_str);
         println!("Detected as Bluetooth? {}", is_bt);
 
+        let offset = if is_bt {
+            BT_BATTERY_OFFSET
+        } else {
+            USB_BATTERY_OFFSET
+        };
         let buf_size = if is_bt { 78 } else { 64 };
 
         let device = match device_info.open_device(&api) {
@@ -41,42 +47,51 @@ pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
                 println!("Read {} bytes from device", n);
                 println!("Full report: {:?}", &buf[..n]);
             }
-            Ok(_) => continue,
-            Err(e) => {
-                println!("Failed to read HID report: {:?}", e);
-                continue;
-            }
+            _ => continue,
         }
 
-        let (percentage, charging) = if is_bt && buf.len() > 56 && buf[0] == 0x31 {
-            let level = buf[54].min(10);
-            let state = buf[55];
-            let pct = match level {
-                0 => 0,
-                1 => 10,
-                2 => 20,
-                3 => 30,
-                4 => 40,
-                5 => 50,
-                6 => 60,
-                7 => 70,
-                8 => 80,
-                9 => 90,
-                _ => 100,
-            };
-            let is_charging = (state & 0x10) != 0;
-            println!("Parsed from BT report: level={}, state={}", level, state);
-            (pct, is_charging)
-        } else {
-            let raw = buf[USB_BATTERY_OFFSET];
+        if offset >= buf.len() {
+            continue;
+        }
+
+        let raw = buf[offset];
+
+        // Battery percentage (proven logic)
+        let (percentage, _) = if is_bt {
             let level = raw & 0x0F;
-            let is_charging = (raw & 0x10) != 0;
-            (level * 10, is_charging)
+            let state = (raw & 0xF0) >> 4;
+            let percent = match state {
+                0x02 => 100,
+                _ => (level as u32 * 100 / 0x0A),
+            };
+            (percent as u8, state == 0x01)
+        } else {
+            let level = raw & 0x0F;
+            (level * 10, (raw & 0x10) != 0)
+        };
+
+        // Charging bool (robust logic)
+        let charging = if is_bt {
+            if buf.len() > 55 && buf[0] == 0x31 {
+                let state = buf[55];
+                (state & 0x10) != 0
+            } else {
+                false
+            }
+        } else {
+            let mut feat = [0u8; 64];
+            match device.get_feature_report(&mut feat) {
+                Ok(n) => {
+                    println!("Feature report ({} bytes): {:?}", n, &feat[..n]);
+                    (feat[4] & 0x10) != 0 || (feat[5] & 0x10) != 0
+                }
+                Err(_) => false,
+            }
         };
 
         println!(
-            "Battery percentage: {}%, charging: {}",
-            percentage, charging
+            "Battery percentage: {}%, charging: {} (raw byte: {})",
+            percentage, charging, raw
         );
 
         if percentage <= 30 && !charging && false {
