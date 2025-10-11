@@ -1,11 +1,28 @@
+use hidapi::HidApi;
 use std::ptr;
 use windows::Win32::Devices::Bluetooth::*;
 use windows::Win32::Foundation::*;
 
-use btleplug::api::{Central, Manager as _, Manager, Peripheral as _, ScanFilter};
-use btleplug::platform::Manager as PlatformManager;
-use futures::stream::StreamExt;
-use tokio::time::{Duration, sleep};
+const SONY_VID: u16 = 0x054C;
+const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
+
+const BUFFER_SIZE_USB: usize = 64;
+const BUFFER_SIZE_BT: usize = 78;
+
+const OFFSET_USB: usize = 53;
+const OFFSET_BT: usize = 54;
+
+const MASK_POWER_LEVEL: u8 = 0x0F;
+const MASK_POWER_STATE: u8 = 0xF0;
+
+const STATE_DISCHARGING: u8 = 0x00;
+const STATE_CHARGING: u8 = 0x01;
+const STATE_COMPLETE: u8 = 0x02;
+
+const MAX_POWER_LEVEL: u8 = 0x0A;
+
+const BT_REPORT_TRUNCATED: u8 = 0x01;
+const CALIBRATION_FR: u8 = 0x05;
 
 pub fn list_connected_ps5_controllers() {
     unsafe {
@@ -36,7 +53,6 @@ pub fn list_connected_ps5_controllers() {
 
         let mut device_info = device_info;
         let mut h_find = h_find;
-
         let mut controllers = Vec::new();
 
         loop {
@@ -44,7 +60,6 @@ pub fn list_connected_ps5_controllers() {
                 let name = String::from_utf16_lossy(&device_info.szName)
                     .trim_end_matches('\0')
                     .to_string();
-
                 if name.contains("Wireless Controller") || name.contains("PS5 Edge") {
                     println!("Classic BT: Connected PS5 controller: {name}");
                     controllers.push(name);
@@ -65,64 +80,68 @@ pub fn list_connected_ps5_controllers() {
 
         let _ = BluetoothFindDeviceClose(h_find);
 
-        // --- BLE: Try reading battery levels ---
         if controllers.is_empty() {
             println!("No PS5 controllers detected via Classic Bluetooth.");
             return;
         }
 
-        let controllers_clone = controllers.clone();
-        tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async move {
-                let manager = PlatformManager::new().await.unwrap();
-                let adapters = manager.adapters().await.unwrap();
+        // --- Read HID battery levels (USB or Bluetooth) ---
+        let api = HidApi::new().expect("Failed to create HID API instance");
 
-                if adapters.is_empty() {
-                    println!("No BLE adapters found!");
-                    return;
-                }
+        for device_info in api.device_list() {
+            if device_info.vendor_id() != SONY_VID || !SONY_PIDS.contains(&device_info.product_id())
+            {
+                continue;
+            }
 
-                let central = adapters.into_iter().nth(0).unwrap();
-                central.start_scan(ScanFilter::default()).await.unwrap();
-                println!("Scanning for BLE devices for 5 seconds...");
-                sleep(Duration::from_secs(5)).await;
+            let device = match device_info.open_device(&api) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
 
-                let peripherals = central.peripherals().await.unwrap();
-                println!("Found {} BLE peripherals", peripherals.len());
+            let path_str = device_info.path().to_string_lossy();
+            let bus_type = if path_str.contains("BTH") {
+                "BT"
+            } else {
+                "USB"
+            };
+            let (offset, buf_size) = if bus_type == "BT" {
+                (OFFSET_BT, BUFFER_SIZE_BT)
+            } else {
+                (OFFSET_USB, BUFFER_SIZE_USB)
+            };
 
-                for p in peripherals {
-                    let properties = match p.properties().await {
-                        Ok(Some(props)) => props,
-                        _ => continue,
-                    };
+            let mut buf = vec![0u8; buf_size];
+            if device.read_timeout(&mut buf, 200).is_err() {
+                println!(
+                    "Failed to read controller PID {:04X}",
+                    device_info.product_id()
+                );
+                continue;
+            }
 
-                    let name = properties
-                        .local_name
-                        .unwrap_or_else(|| "<unknown>".to_string());
-                    let connected = p.is_connected().await.unwrap_or(false);
+            // BT calibration (Go logic)
+            if bus_type == "BT" && buf[0] == BT_REPORT_TRUNCATED {
+                let mut calib_buf = vec![0u8; buf_size];
+                calib_buf[0] = CALIBRATION_FR;
+                let _ = device.send_feature_report(&calib_buf);
+                continue;
+            }
 
-                    if connected && controllers_clone.iter().any(|c| name.contains(c)) {
-                        println!("BLE: Connected PS5 controller detected: {name}");
+            let mut battery = buf[offset] & MASK_POWER_LEVEL;
+            let state = (buf[offset] & MASK_POWER_STATE) >> 4;
 
-                        p.discover_services().await.unwrap();
-                        for service in p.services() {
-                            for characteristic in &service.characteristics {
-                                if characteristic.uuid.to_string()
-                                    == "00002a19-0000-1000-8000-00805f9b34fb"
-                                {
-                                    let battery = match p.read(characteristic).await {
-                                        Ok(data) => data,
-                                        Err(_) => continue,
-                                    };
-                                    println!("Battery: {}%", battery[0]);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            if state == STATE_COMPLETE {
+                battery = MAX_POWER_LEVEL;
+            }
+
+            let percentage = battery * 10;
+            println!(
+                "Controller PID {:04X} ({bus_type}) battery: {}%, state: {:#X}",
+                device_info.product_id(),
+                percentage,
+                state
+            );
+        }
     }
 }

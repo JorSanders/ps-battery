@@ -3,54 +3,95 @@ use hidapi::HidApi;
 
 const SONY_VID: u16 = 0x054C;
 const SONY_PIDS: [u16; 2] = [0x0CE6, 0x0DF2];
-const BATTERY_OFFSET: usize = 53;
+const USB_BATTERY_OFFSET: usize = 53; // wired
+const BT_BATTERY_OFFSET: usize = 54; // wireless Classic BT
 
 pub fn check_controllers(nid: &mut windows::Win32::UI::Shell::NOTIFYICONDATAW) {
     let api = HidApi::new().expect("Failed to create HID API instance");
-    let device_list: Vec<_> = api.device_list().collect();
 
-    for device_info in device_list {
+    for device_info in api.device_list() {
         if device_info.vendor_id() != SONY_VID || !SONY_PIDS.contains(&device_info.product_id()) {
             continue;
         }
 
-        let device = device_info
-            .open_device(&api)
-            .expect("Failed to open device");
-        let mut buf = [0u8; 64];
-        if device.read_timeout(&mut buf, 200).is_err() {
-            return;
+        let name = device_info.product_string().unwrap_or("Unknown");
+        let path_str = device_info.path().to_string_lossy();
+        let is_bt = path_str
+            .to_ascii_uppercase()
+            .contains("00001124-0000-1000-8000-00805F9B34FB");
+
+        println!("--- Found device ---");
+        println!("Name: {}", name);
+        println!("PID: {:04X}", device_info.product_id());
+        println!("Path: {}", path_str);
+        println!("Detected as Bluetooth? {}", is_bt);
+
+        let offset = if is_bt {
+            BT_BATTERY_OFFSET
+        } else {
+            USB_BATTERY_OFFSET
+        };
+        let buf_size = if is_bt { 78 } else { 64 };
+
+        let device = match device_info.open_device(&api) {
+            Ok(d) => d,
+            Err(e) => {
+                println!("Failed to open device: {:?}", e);
+                continue;
+            }
+        };
+
+        let mut buf = vec![0u8; buf_size];
+        match device.read_timeout(&mut buf, 500) {
+            Ok(n) if n > 0 => {
+                println!("Read {} bytes from device", n);
+                println!("Full report: {:?}", &buf[..n]);
+            }
+            Ok(_) => {
+                println!("Read 0 bytes from device");
+                continue;
+            }
+            Err(e) => {
+                println!("Failed to read HID report: {:?}", e);
+                continue;
+            }
         }
 
-        let battery = buf[BATTERY_OFFSET] & 0b00001111;
-        let percentage = battery * 10;
+        if offset >= buf.len() {
+            println!(
+                "Offset {} out of bounds for report length {}",
+                offset,
+                buf.len()
+            );
+            continue;
+        }
 
-        let name = device_info.product_string().unwrap_or("Unknown");
+        let raw = buf[offset];
+
+        // Go logic: extract power level and state
+        let (percentage, charging) = if is_bt {
+            let level = raw & 0x0F;
+            let state = (raw & 0xF0) >> 4;
+            let percent = match state {
+                0x02 => 100,                      // Complete
+                _ => (level as u32 * 100 / 0x0A), // scale 0–0x0A to 0–100%
+            };
+            let is_charging = state == 0x01;
+            (percent as u8, is_charging)
+        } else {
+            // Wired USB
+            let level = raw & 0x0F;
+            let is_charging = (raw & 0x10) != 0;
+            (level * 10, is_charging)
+        };
 
         println!(
-            "Controller {:04X} ({}) battery: {}%",
-            device_info.product_id(),
-            name,
-            percentage
+            "Battery percentage: {}%, charging: {} (raw byte: {})",
+            percentage, charging, raw
         );
 
-        if battery == 3 {
+        if percentage <= 30 {
             play_sound(AlertSound::Notify);
-        } else if battery == 2 {
-            play_sound(AlertSound::Exclamation);
-        } else if battery == 1 {
-            play_sound(AlertSound::Critical);
-        }
-
-        if battery <= 3 {
-            // show_toast(
-            //     "Controller Battery Low",
-            //     &format!(
-            //         "Controller {:04X} battery at {}%",
-            //         device_info.product_id(),
-            //         percentage
-            //     ),
-            // );
             unsafe {
                 show_balloon(
                     nid,
