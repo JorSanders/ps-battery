@@ -17,4 +17,5 @@ features = [
     "Win32_Graphics_Gdi",
     "Win32_Media_Audio",
     "Win32_Foundation",
+    "Win32_System_Registry",
 ]
