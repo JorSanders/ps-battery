@@ -4,6 +4,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
   issues: write
   pull-requests: write
 
@@ -31,12 +32,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+
       - name: Build release binary
         run: cargo build --release
-      - name: Upload .exe to release
+
+      - name: Install cosign
+        run: |
+          winget install -e --id Sigstore.cosign || choco install cosign -y
+
+      - name: Sign binary with Sigstore
+        run: |
+          cosign sign-blob target/release/ps-battery.exe `
+            --output-signature target/release/ps-battery.exe.sig `
+            --yes
+
+      - name: Upload .exe and signature to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: target/release/ps-battery.exe
+          files: |
+            target/release/ps-battery.exe
+            target/release/ps-battery.exe.sig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
