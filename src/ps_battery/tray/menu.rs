@@ -23,17 +23,7 @@ pub unsafe extern "system" fn window_proc(
         if lparam.0 as u32 == WM_RBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
             for s in get_controllers() {
-                let text = format!(
-                    "{}: {}% {}",
-                    s.name,
-                    s.battery_percent,
-                    if s.is_charging {
-                        "Charging"
-                    } else {
-                        "Discharging"
-                    }
-                );
-                let utf16: Vec<u16> = text.encode_utf16().chain(Some(0)).collect();
+                let utf16: Vec<u16> = s.name.encode_utf16().chain(Some(0)).collect();
                 let res =
                     unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
                 if res.is_err() {

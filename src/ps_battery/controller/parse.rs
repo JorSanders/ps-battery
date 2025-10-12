@@ -1,5 +1,5 @@
 use crate::ps_battery::controller::transport::USB_REPORT_SIZE;
-use crate::ps_battery::log::{log_error_with, log_info_with};
+use crate::ps_battery::log::log_error_with;
 use hidapi::HidDevice;
 
 const USB_BATTERY_OFFSET: usize = 53;
@@ -73,25 +73,10 @@ fn get_usb_charging_flag(device: &HidDevice, should_log: bool) -> Option<bool> {
             buf[0] = rid;
 
             match device.get_feature_report(&mut buf) {
-                Ok(n) => {
-                    if should_log {
-                        log_info_with(
-                            "USB feature report ok",
-                            format!("id=0x{:02X}, len_req={}, len_got={}", rid, len, n),
-                        );
-                    }
-
+                Ok(_) => {
                     let b4 = *buf.get(4).unwrap_or(&0);
                     let b5 = *buf.get(5).unwrap_or(&0);
                     let charging_flag = (b4 & 0x10) != 0 || (b5 & 0x10) != 0;
-
-                    if should_log {
-                        log_info_with(
-                            "USB feature bytes [4],[5]",
-                            format!("{:02X},{:02X}", b4, b5),
-                        );
-                        log_info_with("USB charging", charging_flag);
-                    }
 
                     return Some(charging_flag);
                 }

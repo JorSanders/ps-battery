@@ -1,6 +1,6 @@
 # PS Battery
 
-<img src="./images/reason.jpg" alt="Controller dies on 5% hp" width="400" />
+<img src="./images/reason.jpg" alt="Controller dies on 5% hp" width="600" />
 
 I was so annoyed by my PlayStation controllers running out of battery without warning when playing on PC. I made this Rust app to give me a heads-up before it's too late.
 
