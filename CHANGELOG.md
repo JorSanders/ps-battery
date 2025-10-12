@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/JorSanders/ps-battery/compare/v0.1.0...v0.2.0) (2025-10-12)
+
+
+### Features
+
+* update release please ([97976d6](https://github.com/JorSanders/ps-battery/commit/97976d6797ead09b893639b6b29be0b5f756d753))
+* update release please ([3cb6b65](https://github.com/JorSanders/ps-battery/commit/3cb6b65d28b69877c64dfb0952b735009f967a9d))
+
 ## 0.1.0 (2025-10-12)
 
 
