@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
 
     steps:
       - name: Checkout repository
@@ -32,10 +33,15 @@ jobs:
           version=$(grep '^version =' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      - name: Commit and tag
+      - name: Commit and push changes
         run: |
           git add Cargo.toml Cargo.lock
-          git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
+          git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}" || true
           git push origin main
-          git tag "v${{ steps.bump.outputs.version }}"
-          git push origin "v${{ steps.bump.outputs.version }}"
+
+      - name: Create GitHub release and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="v${{ steps.bump.outputs.version }}"
+          gh release create "$version" --generate-notes
