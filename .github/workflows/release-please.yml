@@ -1,7 +1,6 @@
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: write
@@ -13,10 +12,37 @@ name: release-please
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - id: release
+        uses: googleapis/release-please-action@v4
         with:
           release-type: rust
           manifest-file: Cargo.toml
           config-file: .release-please-config.json
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build binary
+        run: cargo build --release
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/release/<your-binary-name> dist/
+          cd dist && tar -czf <your-binary-name>-linux-x86_64.tar.gz <your-binary-name>
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: |
+            dist/<your-binary-name>-linux-x86_64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
