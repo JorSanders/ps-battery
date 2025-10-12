@@ -1,0 +1,61 @@
+name: bump-and-tag
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Determine bump type
+        id: bump_type
+        run: |
+          commits=$(git log -1 --pretty=%B)
+
+          if echo "$commits" | grep -qE "BREAKING CHANGE|^feat!|^fix!"; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif echo "$commits" | grep -qE "^feat(\(.+\))?: "; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        id: bump
+        run: |
+          current=$(grep '^version =' Cargo.toml | sed 's/version = "//; s/"//')
+          IFS='.' read -r major minor patch <<< "$current"
+
+          case "${{ steps.bump_type.outputs.type }}" in
+            major) new_version="$((major + 1)).0.0" ;;
+            minor) new_version="$major.$((minor + 1)).0" ;;
+            patch) new_version="$major.$minor.$((patch + 1))" ;;
+          esac
+
+          sed -i "s/^version = \".*\"/version = \"$new_version\"/" Cargo.toml
+          echo "version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        run: |
+          git add Cargo.toml
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}"
+          git push
+
+      - name: Create and push tag
+        run: |
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin "v${{ steps.bump.outputs.version }}"

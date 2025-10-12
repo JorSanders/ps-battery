@@ -1,0 +1,30 @@
+name: tag
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from Cargo.toml
+        id: version
+        run: echo "version=$(grep '^version =' Cargo.toml | sed 's/version = "//; s/"//')" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        run: |
+          git fetch --tags
+          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag already exists. Skipping."
+            exit 0
+          fi
+
+      - name: Create and push tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
