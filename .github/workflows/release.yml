@@ -1,4 +1,4 @@
-name: release
+name: Create Release from Tag
 
 on:
   push:
@@ -8,44 +8,50 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build
+      - name: Build release binary
         run: cargo build --release
-
-      - name: Rename binary with version
-        shell: bash
-        run: |
-          version=$(awk -F '"' '/^version =/ && in_package {print $2; exit} /^\[package\]/ {in_package=1}' Cargo.toml)
-          echo "Detected version: $version"
-          mkdir dist
-          cp target/release/ps-battery.exe "dist/ps-battery-v${version}.exe"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ps-battery
-          path: dist/*
+          path: target/release/ps-battery.exe
 
   release:
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: ps-battery
-          path: ./dist
+          path: .
+
+      - name: Get version from tag
+        id: get_version
+        shell: bash
+        run: |
+          ref="${GITHUB_REF#refs/tags/}"
+          version="${ref#v}"
+          echo "Detected version: $version"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          name: "v${{ steps.get_version.outputs.version }}"
+          tag_name: "v${{ steps.get_version.outputs.version }}"
+          files: ps-battery.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
