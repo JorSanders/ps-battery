@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/JorSanders/ps-battery/compare/v1.3.0...v1.3.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* remove inline if ([50f1a68](https://github.com/JorSanders/ps-battery/commit/50f1a689e9c2de256c84a9bb5da8e1d4ef72eecf))
+
 ## [1.3.0](https://github.com/JorSanders/ps-battery/compare/v1.2.0...v1.3.0) (2025-10-12)
 
 
