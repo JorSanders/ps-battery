@@ -43,8 +43,7 @@ jobs:
       - name: Sign binary with Sigstore
         run: |
           cosign sign-blob target/release/ps-battery.exe `
-            --output-signature target/release/ps-battery.exe.sig `
-            --yes
+            --yes > target/release/ps-battery.exe.sig
 
       - name: Upload .exe and signature to release
         uses: softprops/action-gh-release@v2
