@@ -1,20 +1,23 @@
 name: Version and Tag
 on:
-  pull_request:
-    types: [closed]
-    branches: [main]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   version:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run release-please
-        uses: google-github-actions/release-please-action@v4
+      - name: Release Please
+        uses: googleapis/release-please-action@v4
         with:
           release-type: rust
           manifest-file: Cargo.toml
