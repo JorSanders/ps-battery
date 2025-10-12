@@ -36,5 +36,6 @@ jobs:
         run: |
           git add Cargo.toml Cargo.lock
           git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
+          git push origin main
           git tag "v${{ steps.bump.outputs.version }}"
-          git push origin main --tags
+          git push origin "v${{ steps.bump.outputs.version }}"
