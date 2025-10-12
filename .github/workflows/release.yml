@@ -20,7 +20,8 @@ jobs:
       - name: Rename binary with version
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version=$(awk -F '"' '/^version =/ && in_package {print $2; exit} /^\[package\]/ {in_package=1}' Cargo.toml)
+          echo "Detected version: $version"
           mkdir dist
           cp target/release/ps-battery.exe "dist/ps-battery-v${version}.exe"
 
