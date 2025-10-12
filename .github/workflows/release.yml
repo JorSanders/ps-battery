@@ -1,4 +1,4 @@
-name: Create Release from Tag
+name: Release
 
 on:
   push:
@@ -19,11 +19,14 @@ jobs:
       - name: Build release binary
         run: cargo build --release
 
+      - name: Package binary (ZIP)
+        run: Compress-Archive -Path target/release/ps-battery.exe -DestinationPath ps-battery.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ps-battery
-          path: target/release/ps-battery.exe
+          path: ps-battery.zip
 
   release:
     needs: build
@@ -38,20 +41,15 @@ jobs:
           name: ps-battery
           path: .
 
-      - name: Get version from tag
-        id: get_version
-        shell: bash
-        run: |
-          ref="${GITHUB_REF#refs/tags/}"
-          version="${ref#v}"
-          echo "Detected version: $version"
-          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "v${{ steps.get_version.outputs.version }}"
-          tag_name: "v${{ steps.get_version.outputs.version }}"
-          files: ps-battery.exe
+          name: "${{ steps.version.outputs.version }}"
+          tag_name: "${{ steps.version.outputs.version }}"
+          files: ps-battery.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
