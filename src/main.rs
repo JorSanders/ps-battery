@@ -3,7 +3,6 @@
 mod controller;
 mod hid;
 mod sound;
-mod toast;
 mod tray;
 
 use hid::*;
