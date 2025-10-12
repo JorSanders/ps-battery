@@ -20,7 +20,7 @@ pub unsafe extern "system" fn window_proc(
     lparam: LPARAM,
 ) -> LRESULT {
     if msg == WM_TRAYICON {
-        if lparam.0 as u32 == WM_RBUTTONUP {
+        if lparam.0 as u32 == WM_RBUTTONUP || lparam.0 as u32 == WM_LBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
             for c in get_controllers() {
                 let transport_label = if c.is_bluetooth { "Bluetooth" } else { "USB" };
@@ -93,15 +93,6 @@ pub unsafe extern "system" fn window_proc(
             let res = unsafe { DestroyMenu(menu) };
             if res.is_err() {
                 eprintln!("DestroyMenu failed");
-            }
-        } else if lparam.0 as u32 == WM_LBUTTONUP {
-            let mut notify = NOTIFYICONDATAW::default();
-            let res = unsafe { Shell_NotifyIconW(NIM_DELETE, &mut notify) };
-            if !res.as_bool() {
-                eprintln!("Shell_NotifyIconW delete failed");
-            }
-            unsafe {
-                PostQuitMessage(0);
             }
         }
     } else if msg == WM_COMMAND {
