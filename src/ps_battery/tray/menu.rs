@@ -22,8 +22,19 @@ pub unsafe extern "system" fn window_proc(
     if msg == WM_TRAYICON {
         if lparam.0 as u32 == WM_RBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
-            for s in get_controllers() {
-                let utf16: Vec<u16> = s.name.encode_utf16().chain(Some(0)).collect();
+            for c in get_controllers() {
+                let transport_label = if c.is_bluetooth { "Bluetooth" } else { "USB" };
+                let status_label = if c.is_charging {
+                    "Charging"
+                } else {
+                    "Not Charging"
+                };
+                let formatted = format!(
+                    "{} [{}] — {}% — {}",
+                    c.name, transport_label, c.battery_percent, status_label
+                );
+
+                let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
                 let res =
                     unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
                 if res.is_err() {

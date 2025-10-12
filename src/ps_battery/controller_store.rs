@@ -5,6 +5,7 @@ pub struct ControllerStatus {
     pub name: String,
     pub battery_percent: u8,
     pub is_charging: bool,
+    pub is_bluetooth: bool,
 }
 
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();

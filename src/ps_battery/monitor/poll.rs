@@ -72,14 +72,11 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
             Some(d) => d,
             None => {
                 if let Some((battery, charging)) = last_seen.get(&name).copied() {
-                    let formatted_name = format!(
-                        "{name} [{transport_label}] — {battery}% — {}",
-                        if charging { "Charging" } else { "Not Charging" }
-                    );
                     status_list.push(ControllerStatus {
-                        name: formatted_name,
+                        name: name.clone(),
                         battery_percent: battery,
                         is_charging: charging,
+                        is_bluetooth: transport.is_bluetooth,
                     });
                 }
                 continue;
@@ -109,18 +106,11 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
         last_seen.insert(name.clone(), (battery_percent, is_charging));
 
-        let status_label = if is_charging {
-            "Charging"
-        } else {
-            "Not Charging"
-        };
-        let formatted_name =
-            format!("{name} [{transport_label}] — {battery_percent}% — {status_label}");
-
         status_list.push(ControllerStatus {
-            name: formatted_name.clone(),
+            name: name.clone(),
             battery_percent,
             is_charging,
+            is_bluetooth: transport.is_bluetooth,
         });
 
         if !is_charging {
@@ -142,7 +132,17 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
                     unsafe {
                         let mut show_args = ShowBalloonArgs {
                             notify: args.tray_icon,
-                            title: &formatted_name,
+                            title: &format!(
+                                "{} [{}] — {}% — {}",
+                                name,
+                                transport_label,
+                                battery_percent,
+                                if is_charging {
+                                    "Charging"
+                                } else {
+                                    "Not Charging"
+                                }
+                            ),
                             message: &format!("Battery at {}%", battery_percent),
                         };
                         show_balloon(&mut show_args);
@@ -153,7 +153,20 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
         }
 
         if should_log_now {
-            log_info_with("Controller", &formatted_name);
+            log_info_with(
+                "Controller",
+                format!(
+                    "{} [{}] — {}% — {}",
+                    name,
+                    transport_label,
+                    battery_percent,
+                    if is_charging {
+                        "Charging"
+                    } else {
+                        "Not Charging"
+                    }
+                ),
+            );
         }
     }
 
