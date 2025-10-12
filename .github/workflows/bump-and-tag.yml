@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      workflows: write # 👈 required for pushing commits/tags when workflow files exist
 
     steps:
       - name: Checkout
@@ -32,7 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo release patch --no-publish --no-push --no-confirm
-          version=$(grep '^version =' Cargo.toml | head -1 | sed 's/version = "//; s/"//')
-          git push origin HEAD:main
-          git push origin "v$version"
+          cargo release patch --no-publish --execute --no-confirm
