@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/JorSanders/ps-battery/compare/v1.1.0...v1.1.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* save values in controller store ([4f0d24d](https://github.com/JorSanders/ps-battery/commit/4f0d24d44dea39231e39dad2c43276451c500c6b))
+
 ## [1.1.0](https://github.com/JorSanders/ps-battery/compare/v1.0.0...v1.1.0) (2025-10-12)
 
 
