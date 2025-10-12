@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/JorSanders/ps-battery/compare/v0.1.0...v1.0.0) (2025-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add LICENSE and README for 1.0 release
+
+### Features
+
+* Add LICENSE and README for 1.0 release ([d3ca906](https://github.com/JorSanders/ps-battery/commit/d3ca9061fe8a9463bdf5acc3a8ffc5a46734407d))
+
 ## 0.1.0 (2025-10-12)
 
 
