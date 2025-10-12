@@ -1,0 +1,21 @@
+name: Version and Tag
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Conventional Commits
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: rust
+          package-name: ps-battery
+          token: ${{ secrets.GITHUB_TOKEN }}
