@@ -1,6 +1,12 @@
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force new release even if no user-facing commits exist"
+        required: false
+        default: "false"
 
 permissions:
   contents: write
@@ -25,9 +31,19 @@ jobs:
           config-file: .release-please-config.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Force release manually if none was created
+        if: ${{ steps.release.outputs.release_created != 'true' && github.event.inputs.force == 'true' }}
+        run: |
+          echo "Forcing release..."
+          git fetch --tags
+          VERSION="v$(date +'%Y.%m.%d-%H%M')"
+          gh release create "$VERSION" --notes "Manual forced release"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   upload-assets:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.release_created == 'true' || github.event.inputs.force == 'true' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +65,7 @@ jobs:
       - name: Upload .exe and signature to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          tag_name: ${{ needs.release-please.outputs.tag_name || format('v{0}', github.run_id) }}
           files: |
             target/release/ps-battery.exe
             target/release/ps-battery.exe.sig
