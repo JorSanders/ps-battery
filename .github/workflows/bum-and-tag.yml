@@ -46,7 +46,7 @@ jobs:
             patch) new_version="$major.$minor.$((patch + 1))" ;;
           esac
 
-          sed -i "s/^version = \".*\"/version = \"$new_version\"/" Cargo.toml
+          sed -i '/^\[package\]/,/^\[/{s/^version = ".*"/version = "'$new_version'"/}' Cargo.toml
           echo "version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Commit version bump
