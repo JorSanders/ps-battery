@@ -37,17 +37,14 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          current=$(grep '^version =' Cargo.toml | sed 's/version = "//; s/"//')
-          IFS='.' read -r major minor patch <<< "$current"
-
-          case "${{ steps.bump_type.outputs.type }}" in
-            major) new_version="$((major + 1)).0.0" ;;
-            minor) new_version="$major.$((minor + 1)).0" ;;
-            patch) new_version="$major.$minor.$((patch + 1))" ;;
-          esac
-
-          sed -i '/^\[package\]/,/^\[/{s/^version = ".*"/version = "'$new_version'"/}' Cargo.toml
-          echo "version=$new_version" >> $GITHUB_OUTPUT
+          cargo install cargo-edit --quiet
+          cargo set-version $(npm version patch --git-tag-version=false | tail -n 1)
+          cargo update -p ps-battery
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore(release): bump version to $(grep '^version =' Cargo.toml | head -1 | cut -d '"' -f2)"
+          version=$(awk -F '"' '/^\[package\]/ {in_package=1; next} /^\[/ {in_package=0} in_package && /^version/ {print $2; exit}' Cargo.toml)
+          git tag "v$version"
+          git push origin HEAD:main --tags
 
       - name: Commit version bump
         run: |

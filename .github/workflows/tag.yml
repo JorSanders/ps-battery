@@ -12,9 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract version from Cargo.toml
-        id: version
-        run: echo "version=$(grep '^version =' Cargo.toml | sed 's/version = "//; s/"//')" >> $GITHUB_OUTPUT
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          version=$(awk -F '"' '/^\[package\]/ {in_package=1; next} /^\[/ {in_package=0} in_package && /^version/ {print $2; exit}' Cargo.toml)
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Check if tag exists
         run: |
