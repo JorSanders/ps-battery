@@ -27,22 +27,22 @@ jobs:
   upload-assets:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build binary
-        run: cargo build --release
-      - name: Package
+      - name: Build Windows binary
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      - name: Package .exe
         run: |
-          mkdir -p dist
-          cp target/release/<your-binary-name> dist/
-          cd dist && tar -czf <your-binary-name>-linux-x86_64.tar.gz <your-binary-name>
+          mkdir dist
+          copy target\x86_64-pc-windows-msvc\release\<your-binary-name>.exe dist\
+          cd dist
+          powershell Compress-Archive -Path <your-binary-name>.exe -DestinationPath <your-binary-name>-windows-x86_64.zip
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: |
-            dist/<your-binary-name>-linux-x86_64.tar.gz
+          files: dist\<your-binary-name>-windows-x86_64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
