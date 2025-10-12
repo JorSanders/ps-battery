@@ -17,6 +17,7 @@ fn main() {
 
         loop {
             let mut msg = MSG::default();
+
             while PeekMessageW(&mut msg, None, 0, 0, PM_REMOVE).as_bool() {
                 if msg.message == WM_QUIT {
                     return;

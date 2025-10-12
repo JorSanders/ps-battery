@@ -37,6 +37,7 @@ jobs:
         run: cargo build --release
 
       - name: Install latest Cosign
+        shell: pwsh
         run: |
           curl -L https://github.com/sigstore/cosign/releases/latest/download/cosign-windows-amd64.exe -o cosign.exe
           mkdir -p $env:USERPROFILE\bin
@@ -46,7 +47,11 @@ jobs:
       - name: Sign binary with Sigstore
         shell: pwsh
         run: |
-          cosign sign-blob target/release/ps-battery.exe --yes > target/release/ps-battery.exe.sig
+          cosign sign-blob `
+            target/release/ps-battery.exe `
+            --yes `
+            --bundle target/release/ps-battery.exe.bundle `
+            > target/release/ps-battery.exe.sig
 
       - name: Upload .exe and signature to release
         uses: softprops/action-gh-release@v2
