@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/JorSanders/ps-battery/compare/v0.3.0...v0.3.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* exe name ([1e7e06c](https://github.com/JorSanders/ps-battery/commit/1e7e06c03c1e8b4d5abff327efd84d61837773c5))
+
 ## [0.3.0](https://github.com/JorSanders/ps-battery/compare/v0.2.0...v0.3.0) (2025-10-12)
 
 
