@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/JorSanders/ps-battery/compare/v1.1.1...v1.2.0) (2025-10-12)
+
+
+### Features
+
+* on left click open tray instead of removing ([8558fae](https://github.com/JorSanders/ps-battery/commit/8558fae0a73ea60b6623606ba65ce91015881e4b))
+
 ## [1.1.1](https://github.com/JorSanders/ps-battery/compare/v1.1.0...v1.1.1) (2025-10-12)
 
 
