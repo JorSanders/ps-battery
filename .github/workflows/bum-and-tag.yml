@@ -1,4 +1,4 @@
-name: Bump and Tag
+name: Bump Version and Tag
 
 on:
   push:
@@ -12,43 +12,29 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Rust & cargo-edit
-        run: |
-          rustup update stable
-          cargo install cargo-edit --quiet
+      - name: Install cargo-edit
+        run: cargo install cargo-edit
 
-      - name: Bump patch version
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
         id: bump
-        shell: bash
         run: |
           cargo set-version --bump patch
-          cargo update -p ps-battery
-          git add Cargo.toml Cargo.lock
-          new_version=$(awk -F '"' '
-            /^\[package\]/ {in_package=1; next}
-            /^\[/ {in_package=0}
-            in_package && /^version/ {print $2; exit}
-          ' Cargo.toml)
+          version=$(grep '^version =' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$version" >> $GITHUB_OUTPUT
 
-          if [ -z "$new_version" ]; then
-            echo "❌ Failed to parse version from Cargo.toml"
-            cat Cargo.toml
-            exit 1
-          fi
-
-          echo "Detected new version: $new_version"
-          git commit -m "chore(release): bump version to $new_version"
-          git tag "v$new_version"
-          echo "version=$new_version" >> $GITHUB_OUTPUT
-
-      - name: Push commit and tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and tag
         run: |
-          git push origin HEAD:main
-          git push origin "v${{ steps.bump.outputs.version }}"
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin main --tags
