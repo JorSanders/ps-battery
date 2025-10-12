@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/JorSanders/ps-battery/compare/v1.3.2...v1.4.0) (2025-10-12)
+
+
+### Features
+
+* fix signing exe ([f373d5e](https://github.com/JorSanders/ps-battery/commit/f373d5ea02f791ce80109e9eab824940f7cc4ff1))
+
 ## [1.3.2](https://github.com/JorSanders/ps-battery/compare/v1.3.1...v1.3.2) (2025-10-12)
 
 
