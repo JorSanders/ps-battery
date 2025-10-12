@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/JorSanders/ps-battery/compare/v1.0.0...v1.1.0) (2025-10-12)
+
+
+### Features
+
+* Update controller format ([b5390b4](https://github.com/JorSanders/ps-battery/commit/b5390b40c4d8b32f544a494143aabe468511a451))
+
+
+### Bug Fixes
+
+* detect charging over USB ([b9c8ad0](https://github.com/JorSanders/ps-battery/commit/b9c8ad091fcad507b068ed74a60eed535877cb8a))
+
 ## [1.0.0](https://github.com/JorSanders/ps-battery/compare/v0.1.0...v1.0.0) (2025-10-12)
 
 
