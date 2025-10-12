@@ -52,7 +52,11 @@ pub fn enable() -> bool {
         let bytes = std::slice::from_raw_parts(exe_u16.as_ptr() as *const u8, exe_u16.len() * 2);
         let name = to_wide(APP_NAME);
         let set = RegSetValueExW(hkey, PCWSTR(name.as_ptr()), Some(0), REG_SZ, Some(bytes));
-        let _ = RegCloseKey(hkey);
+        let res = RegCloseKey(hkey);
+        if res != WIN32_ERROR(0) {
+            eprintln!("RegCloseKey failed with code {:?}", res);
+        }
+
         set.is_ok()
     }
 }
@@ -73,7 +77,10 @@ pub fn disable() -> bool {
         }
         let name = to_wide(APP_NAME);
         let del = RegDeleteValueW(hkey, PCWSTR(name.as_ptr()));
-        let _ = RegCloseKey(hkey);
+        let res = RegCloseKey(hkey);
+        if res != WIN32_ERROR(0) {
+            eprintln!("RegCloseKey failed with code {:?}", res);
+        }
         del.is_ok()
     }
 }

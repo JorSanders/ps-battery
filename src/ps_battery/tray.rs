@@ -25,7 +25,10 @@ pub unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
         .copy_from_slice(&TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>()[..]);
     unsafe {
         notify.hIcon = LoadIconW(None, IDI_APPLICATION).expect("load icon failed");
-        let _ = Shell_NotifyIconW(NIM_ADD, &mut notify);
+        let res = Shell_NotifyIconW(NIM_ADD, &mut notify);
+        if !res.as_bool() {
+            eprintln!("Shell_NotifyIconW failed");
+        }
     }
     notify
 }

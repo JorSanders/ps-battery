@@ -1,4 +1,7 @@
-use windows::Win32::UI::Shell::{NIF_TIP, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW};
+use windows::{
+    Win32::UI::Shell::{NIF_TIP, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW},
+    core::BOOL,
+};
 
 pub struct ShowBalloonArgs<'a> {
     pub notify: &'a mut NOTIFYICONDATAW,
@@ -13,6 +16,9 @@ pub unsafe fn show_balloon(args: &mut ShowBalloonArgs) {
     args.notify.szInfo[..msg_utf16.len()].copy_from_slice(&msg_utf16);
     args.notify.szInfoTitle[..title_utf16.len()].copy_from_slice(&title_utf16);
     unsafe {
-        let _ = Shell_NotifyIconW(NIM_MODIFY, args.notify);
+        let res = Shell_NotifyIconW(NIM_MODIFY, args.notify);
+        if res == BOOL(0) {
+            eprintln!("Shell_NotifyIconW failed");
+        }
     }
 }

@@ -19,7 +19,10 @@ pub unsafe fn create_hidden_window() -> HWND {
         ..Default::default()
     };
     unsafe {
-        let _ = RegisterClassW(&window_class);
+        let res = RegisterClassW(&window_class);
+        if res == 0 {
+            eprintln!("RegisterClassW failed");
+        }
         CreateWindowExW(
             WINDOW_EX_STYLE(0),
             &class_name,
