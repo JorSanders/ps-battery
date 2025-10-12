@@ -17,11 +17,18 @@ jobs:
       - name: Build
         run: cargo build --release
 
+      - name: Rename binary with version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir dist
+          cp target/release/ps-battery.exe "dist/ps-battery-v${version}.exe"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ps-battery
-          path: target/release/ps-battery.exe
+          path: dist/*
 
   release:
     needs: build
@@ -33,11 +40,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ps-battery
-          path: .
+          path: ./dist
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ps-battery.exe
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
