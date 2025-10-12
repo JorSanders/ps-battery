@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write # 👈 required for pushing commits/tags when workflow files exist
 
     steps:
       - name: Checkout
@@ -31,6 +30,6 @@ jobs:
 
       - name: Bump patch version and create tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cargo release patch --no-publish --execute --no-confirm
