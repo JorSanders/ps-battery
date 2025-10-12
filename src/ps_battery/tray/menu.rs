@@ -23,12 +23,19 @@ pub unsafe extern "system" fn window_proc(
         if lparam.0 as u32 == WM_RBUTTONUP || lparam.0 as u32 == WM_LBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
             for c in get_controllers() {
-                let transport_label = if c.is_bluetooth { "Bluetooth" } else { "USB" };
-                let status_label = if c.is_charging {
-                    "Charging"
+                let transport_label;
+                if c.is_bluetooth {
+                    transport_label = "Bluetooth";
                 } else {
-                    "Not Charging"
-                };
+                    transport_label = "USB";
+                }
+
+                let status_label;
+                if c.is_charging {
+                    status_label = "Charging";
+                } else {
+                    status_label = "Not Charging";
+                }
                 let formatted = format!(
                     "{} [{}] — {}% — {}",
                     c.name, transport_label, c.battery_percent, status_label
