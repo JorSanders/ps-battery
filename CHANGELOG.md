@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/JorSanders/ps-battery/compare/v1.3.1...v1.3.2) (2025-10-12)
+
+
+### Bug Fixes
+
+* handle all results ([8d870a6](https://github.com/JorSanders/ps-battery/commit/8d870a6801de7a78b76db7bc0c2f10554824aa98))
+
 ## [1.3.1](https://github.com/JorSanders/ps-battery/compare/v1.3.0...v1.3.1) (2025-10-12)
 
 
