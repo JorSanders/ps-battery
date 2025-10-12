@@ -11,7 +11,7 @@ use windows::Win32::UI::WindowsAndMessaging::{IDI_APPLICATION, LoadIconW};
 
 pub const WM_TRAYICON: u32 = 0x8000 + 1;
 const TRAY_ICON_ID: u32 = 100;
-const TRAY_TIP_TEXT: &str = "PS Battery Monitor";
+const TRAY_TIP_TEXT: &str = "PS Battery";
 
 pub unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let mut notify = NOTIFYICONDATAW::default();
