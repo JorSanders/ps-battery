@@ -1,4 +1,4 @@
-use crate::ps_battery::log::log_info_with;
+use crate::ps_battery::log::{log_error_with, log_info_with};
 use hidapi::HidDevice;
 use std::thread;
 use std::time::Duration;
@@ -32,7 +32,7 @@ pub fn maybe_send_feature_report(args: &MaybeSendBluetoothCalibrationArgs) {
 
     let report_resullt = args.device.get_feature_report(&mut report_buffer);
     if let Err(err) = report_resullt {
-        eprintln!("Failed to read feature report: {err}");
+        log_error_with("Failed to read feature report", err);
     }
 
     thread::sleep(Duration::from_millis(BLUETOOTH_REPORT_SETTLE_MS));

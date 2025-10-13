@@ -1,5 +1,8 @@
-use crate::ps_battery::controller::report::{
-    MaybeSendBluetoothCalibrationArgs, TRUNCATED_BLUETOOTH_HEADER, maybe_send_feature_report,
+use crate::ps_battery::{
+    controller::report::{
+        MaybeSendBluetoothCalibrationArgs, TRUNCATED_BLUETOOTH_HEADER, maybe_send_feature_report,
+    },
+    log::log_error_with,
 };
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 
@@ -14,12 +17,12 @@ pub fn open_device(args: &OpenDeviceArgs) -> Option<HidDevice> {
     match args.info.open_device(args.api) {
         Ok(d) => {
             if let Err(err) = d.set_blocking_mode(false) {
-                eprintln!("Failed to set non-blocking mode: {err}");
+                log_error_with("Failed to set non-blocking mode", err);
             }
             Some(d)
         }
         Err(err) => {
-            eprintln!("Failed to open HID device: {err}");
+            log_error_with("Failed to open HID device", err);
             None
         }
     }
