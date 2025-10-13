@@ -12,6 +12,7 @@ use crate::ps_battery::monitor::cache::{HID_API, LAST_ALERT_TIMES, LAST_SEEN_CAC
 use crate::ps_battery::monitor::device_list::{
     EnumerateControllersArgs, enumerate_sony_controllers,
 };
+use crate::ps_battery::tray::balloon::BalloonIcon;
 use crate::ps_battery::tray::{ShowBalloonArgs, show_balloon};
 
 use hidapi::HidApi;
@@ -120,15 +121,19 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
             };
 
             if due {
-                let alert = match battery_percent {
-                    p if p <= ALERT_LVL_CRITICAL_MAX => Some(AlertSound::Critical),
-                    p if p <= ALERT_LVL_EXCLAMATION_MAX => Some(AlertSound::Exclamation),
-                    p if p <= ALERT_LVL_NOTIFY_MAX => Some(AlertSound::Notify),
-                    _ => None,
+                let alert_level = if battery_percent <= ALERT_LVL_CRITICAL_MAX {
+                    Some((AlertSound::Critical, BalloonIcon::Error))
+                } else if battery_percent <= ALERT_LVL_EXCLAMATION_MAX {
+                    Some((AlertSound::Exclamation, BalloonIcon::Warning))
+                } else if battery_percent <= ALERT_LVL_NOTIFY_MAX {
+                    Some((AlertSound::Notify, BalloonIcon::Info))
+                } else {
+                    None
                 };
 
-                if let Some(level) = alert {
-                    play_sound(&PlaySoundArgs { alert: level });
+                if let Some((sound_level, balloon_icon)) = alert_level {
+                    play_sound(&PlaySoundArgs { alert: sound_level });
+
                     unsafe {
                         let mut show_args = ShowBalloonArgs {
                             notify: args.tray_icon,
@@ -144,9 +149,11 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
                                 }
                             ),
                             message: &format!("Battery at {}%", battery_percent),
+                            icon: balloon_icon,
                         };
                         show_balloon(&mut show_args);
                     }
+
                     alert_times.insert(name.clone(), now);
                 }
             }
