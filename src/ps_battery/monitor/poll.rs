@@ -52,6 +52,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
     if should_log_now {
         println!("-------------------------------");
+        println!("")
     }
 
     for info in controllers {
