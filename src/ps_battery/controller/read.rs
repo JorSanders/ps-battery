@@ -1,5 +1,5 @@
-use crate::ps_battery::controller::calibration::{
-    MaybeSendBluetoothCalibrationArgs, TRUNCATED_BLUETOOTH_HEADER, maybe_send_bluetooth_calibration,
+use crate::ps_battery::controller::report::{
+    MaybeSendBluetoothCalibrationArgs, TRUNCATED_BLUETOOTH_HEADER, maybe_send_feature_report,
 };
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 
@@ -48,7 +48,7 @@ pub fn read_report_with_calibration(args: &mut ReadReportWithCalibrationArgs) ->
                 first_byte,
                 should_log: args.should_log,
             };
-            maybe_send_bluetooth_calibration(&calib_args);
+            maybe_send_feature_report(&calib_args);
             count = args
                 .device
                 .read_timeout(args.buffer, HID_REFRESH_TIMEOUT_MS)
