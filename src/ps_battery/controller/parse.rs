@@ -3,9 +3,14 @@ use crate::ps_battery::log::{log_error_with, log_info_with};
 use hidapi::HidDevice;
 
 const USB_BATTERY_OFFSET: usize = 53;
-const BLUETOOTH_BATTERY_OFFSET: usize = 54; // correct per HID spec
+const BLUETOOTH_BATTERY_OFFSET: usize = 54;
 const BLUETOOTH_CHARGE_FLAG_INDEX: usize = 55;
 const FEATURE_IDS_USB: &[u8] = &[0x02, 0x05, 0x09];
+
+// --- Bit masks ---
+const MASK_LOW_NIBBLE: u8 = 0b0000_1111;
+const MASK_HIGH_NIBBLE: u8 = 0b1111_0000;
+const MASK_CHARGING_FLAG: u8 = 0b0001_0000;
 
 pub struct ParseBatteryAndChargingArgs<'a> {
     pub device: &'a HidDevice,
@@ -51,7 +56,7 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         }
 
         let raw = args.buffer[USB_BATTERY_OFFSET];
-        let level = (raw & 0x0F).min(0x0A);
+        let level = (raw & MASK_LOW_NIBBLE).min(0x0A);
         let pct = level.saturating_mul(10);
 
         let mut is_charging = false;
@@ -83,15 +88,15 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         .copied()
         .unwrap_or(0);
 
-    let level = ((raw_battery & 0xF0) >> 4).min(0x0A);
+    let level = ((raw_battery & MASK_HIGH_NIBBLE) >> 4).min(0x0A);
     let pct = level.saturating_mul(10);
-    let is_charging = (raw_charge & 0x10) != 0;
+    let is_charging = (raw_charge & MASK_CHARGING_FLAG) != 0;
 
     if args.should_log {
         log_info_with(
             "BT battery decode",
             format!(
-                "idx={} raw_battery=0x{:02X} level={} -> pct={} raw_charge=0x{:02X} charging={}",
+                "idx={} raw_battery=0x{:02X} level(high)={} -> pct={} raw_charge=0x{:02X} charging={}",
                 BLUETOOTH_BATTERY_OFFSET, raw_battery, level, pct, raw_charge, is_charging
             ),
         );
@@ -112,7 +117,8 @@ fn get_usb_charging_flag(device: &HidDevice, should_log: bool) -> Option<bool> {
                 Ok(_) => {
                     let b4 = *buf.get(4).unwrap_or(&0);
                     let b5 = *buf.get(5).unwrap_or(&0);
-                    let charging_flag = (b4 & 0x10) != 0 || (b5 & 0x10) != 0;
+                    let charging_flag =
+                        (b4 & MASK_CHARGING_FLAG) != 0 || (b5 & MASK_CHARGING_FLAG) != 0;
                     return Some(charging_flag);
                 }
                 Err(e) => {
