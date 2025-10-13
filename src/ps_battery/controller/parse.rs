@@ -95,7 +95,7 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         log_info_with(
             "BT battery decode",
             format!(
-                "idx={} raw_battery=0x{:02X} level(high)={} -> pct={} raw_charge=0x{:02X} charging={}",
+                "idx={} raw_battery=0x{:02X} level={} -> pct={} raw_charge=0x{:02X} charging={}",
                 BLUETOOTH_BATTERY_OFFSET, raw_battery, level, pct, raw_charge, is_charging
             ),
         );
