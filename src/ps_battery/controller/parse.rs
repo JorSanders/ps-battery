@@ -7,7 +7,6 @@ const BLUETOOTH_BATTERY_OFFSET: usize = 54;
 const BLUETOOTH_CHARGE_FLAG_INDEX: usize = 55;
 const FEATURE_IDS_USB: &[u8] = &[0x02, 0x05, 0x09];
 
-// --- Bit masks ---
 const MASK_LOW_NIBBLE: u8 = 0b0000_1111;
 const MASK_HIGH_NIBBLE: u8 = 0b1111_0000;
 const MASK_CHARGING_FLAG: u8 = 0b0001_0000;
