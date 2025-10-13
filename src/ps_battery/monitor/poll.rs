@@ -8,7 +8,7 @@ use crate::ps_battery::controller::read::{
 use crate::ps_battery::controller::transport::{DetectTransportArgs, detect_transport};
 use crate::ps_battery::controller_store::{ControllerStatus, set_controllers};
 use crate::ps_battery::log::log_info_with;
-use crate::ps_battery::monitor::cache::{HID_API, LAST_ALERT_TIMES, LAST_SEEN_CACHE, should_log};
+use crate::ps_battery::monitor::cache::{HID_API, LAST_ALERT_TIMES, should_log};
 use crate::ps_battery::monitor::device_list::{
     EnumerateControllersArgs, enumerate_sony_controllers,
 };
@@ -23,10 +23,6 @@ use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
 const ALERT_INTERVAL_SECONDS: u64 = 300;
 const LOG_INTERVAL_SECONDS: u64 = 10;
-
-const ALERT_LVL_CRITICAL_MAX: u8 = 10;
-const ALERT_LVL_EXCLAMATION_MAX: u8 = 20;
-const ALERT_LVL_NOTIFY_MAX: u8 = 30;
 
 pub struct PollControllersArgs<'a> {
     pub tray_icon: &'a mut NOTIFYICONDATAW,
@@ -52,9 +48,6 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
     let alerts = LAST_ALERT_TIMES.get_or_init(|| Mutex::new(HashMap::new()));
     let mut alert_times = alerts.lock().expect("alert map poisoned");
 
-    let cache = LAST_SEEN_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
-    let mut last_seen = cache.lock().expect("cache map poisoned");
-
     let mut status_list: Vec<ControllerStatus> = Vec::new();
 
     for info in controllers {
@@ -71,17 +64,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
             info: &info,
         }) {
             Some(d) => d,
-            None => {
-                if let Some((battery, charging)) = last_seen.get(&name).copied() {
-                    status_list.push(ControllerStatus {
-                        name: name.clone(),
-                        battery_percent: battery,
-                        is_charging: charging,
-                        is_bluetooth: transport.is_bluetooth,
-                    });
-                }
-                continue;
-            }
+            None => continue,
         };
 
         let mut buffer = vec![0u8; transport.report_size];
@@ -105,8 +88,6 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
                 should_log: should_log_now,
             });
 
-        last_seen.insert(name.clone(), (battery_percent, is_charging));
-
         status_list.push(ControllerStatus {
             name: name.clone(),
             battery_percent,
@@ -121,11 +102,11 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
             };
 
             if due {
-                let alert_level = if battery_percent <= ALERT_LVL_CRITICAL_MAX {
+                let alert_level = if battery_percent <= 10 {
                     Some((AlertSound::Critical, BalloonIcon::Error))
-                } else if battery_percent <= ALERT_LVL_EXCLAMATION_MAX {
+                } else if battery_percent <= 20 {
                     Some((AlertSound::Exclamation, BalloonIcon::Warning))
-                } else if battery_percent <= ALERT_LVL_NOTIFY_MAX {
+                } else if battery_percent <= 30 {
                     Some((AlertSound::Notify, BalloonIcon::Info))
                 } else {
                     None

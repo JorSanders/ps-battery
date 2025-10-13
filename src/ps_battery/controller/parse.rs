@@ -1,5 +1,5 @@
 use crate::ps_battery::controller::transport::USB_REPORT_SIZE;
-use crate::ps_battery::log::log_error_with;
+use crate::ps_battery::log::{log_error_with, log_info_with};
 use hidapi::HidDevice;
 
 const USB_BATTERY_OFFSET: usize = 53;

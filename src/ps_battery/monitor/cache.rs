@@ -5,7 +5,6 @@ use std::time::{Duration, Instant};
 
 pub(super) static HID_API: OnceLock<Mutex<HidApi>> = OnceLock::new();
 pub(super) static LAST_ALERT_TIMES: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
-pub(super) static LAST_SEEN_CACHE: OnceLock<Mutex<HashMap<String, (u8, bool)>>> = OnceLock::new();
 pub(super) static LOG_TIMER: OnceLock<Mutex<Instant>> = OnceLock::new();
 
 pub fn should_log(now: Instant, interval: Duration) -> bool {
