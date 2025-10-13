@@ -15,7 +15,36 @@ pub struct ParseBatteryAndChargingArgs<'a> {
 }
 
 pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bool) {
-    // --- USB controllers ---
+    let report_id = args.buffer.get(0).copied().unwrap_or(0);
+
+    if args.should_log {
+        log_info_with(
+            "Controller buffer dump",
+            format!(
+                "len={} bytes={}",
+                args.buffer.len(),
+                args.buffer
+                    .iter()
+                    .map(|b| format!("{:02X}", b))
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ),
+        );
+
+        log_info_with(
+            "Detected report type",
+            format!(
+                "report_id=0x{:02X} ({})",
+                report_id,
+                if report_id == 0x31 {
+                    "DualSense new format"
+                } else {
+                    "Legacy format"
+                }
+            ),
+        );
+    }
+
     if !args.is_bluetooth {
         if USB_BATTERY_OFFSET >= args.buffer.len() {
             return (0, false);
@@ -43,7 +72,6 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         return (pct, is_charging);
     }
 
-    // --- Bluetooth controllers ---
     if BLUETOOTH_BATTERY_OFFSET >= args.buffer.len() {
         return (0, false);
     }

@@ -50,6 +50,10 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
     let mut status_list: Vec<ControllerStatus> = Vec::new();
 
+    if should_log_now {
+        println!("-------------------------------");
+    }
+
     for info in controllers {
         let name = info.product_string().unwrap_or("Unknown").to_string();
         let transport = detect_transport(&DetectTransportArgs { info: &info });
@@ -78,42 +82,6 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
         let count = read_report_with_calibration(&mut read_args);
         if count == 0 {
             continue;
-        }
-
-        if should_log_now {
-            log_info_with(
-                "Controller buffer dump",
-                format!(
-                    "{} [{}] len={} bytes={}",
-                    name,
-                    transport_label,
-                    buffer.len(),
-                    buffer
-                        .iter()
-                        .map(|b| format!("{:02X}", b))
-                        .collect::<Vec<_>>()
-                        .join(" ")
-                ),
-            );
-        }
-
-        // Detect report type automatically
-        let report_id = buffer.get(0).copied().unwrap_or(0);
-        if should_log_now {
-            log_info_with(
-                "Detected report type",
-                format!(
-                    "{} [{}] report_id=0x{:02X} ({})",
-                    name,
-                    transport_label,
-                    report_id,
-                    if report_id == 0x31 {
-                        "DualSense new format"
-                    } else {
-                        "Legacy format"
-                    }
-                ),
-            );
         }
 
         let (battery_percent, is_charging) =
@@ -191,6 +159,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
                     }
                 ),
             );
+            print!("\n");
         }
     }
 
