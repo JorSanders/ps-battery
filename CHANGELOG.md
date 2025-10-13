@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.1](https://github.com/JorSanders/ps-battery/compare/v1.6.0...v1.6.1) (2025-10-13)
+
+
+### Bug Fixes
+
+* clean up logging ([4ab7a10](https://github.com/JorSanders/ps-battery/commit/4ab7a1012e73f44647d50a43d36b1b3109b573a8))
+* dont panic in balloon ([cab0b7d](https://github.com/JorSanders/ps-battery/commit/cab0b7d8d1e099e77ff1aecd73b433c7e57a28c8))
+* dont print (high) ([6295a1f](https://github.com/JorSanders/ps-battery/commit/6295a1fbee5cef2a9be4fc92236069257d364f87))
+* dont print high ([c3a9247](https://github.com/JorSanders/ps-battery/commit/c3a9247b453e4f1d1d980af845999ccedf624532))
+* i think parsing works now ([38f24ac](https://github.com/JorSanders/ps-battery/commit/38f24ac3fa2c5b37ca11c74a2ff3a61c22e6e1de))
+* print extra whitelline ([c421d6c](https://github.com/JorSanders/ps-battery/commit/c421d6c5a8a20b7a9098d3e6811a1dbaa5904f3d))
+* remove comment ([e6effce](https://github.com/JorSanders/ps-battery/commit/e6effce7e9d6dd1dccae4d66614a05f8c6d0acf8))
+* remove last seen ([ed2c1c7](https://github.com/JorSanders/ps-battery/commit/ed2c1c7952eee3cf69c8413aa94d091a74da4fda))
+* rename calibration to report ([b8aaf91](https://github.com/JorSanders/ps-battery/commit/b8aaf91dbe152cc929de07bb49579374573a8f5b))
+* save bitmasks as consts ([ef94a8f](https://github.com/JorSanders/ps-battery/commit/ef94a8fbcda941bf8fff1845e3b8b5c857079f15))
+* use log error with ([37e8d11](https://github.com/JorSanders/ps-battery/commit/37e8d111ed072dbe894289fd90dabc320ea43738))
+
 ## [1.6.0](https://github.com/JorSanders/ps-battery/compare/v1.5.0...v1.6.0) (2025-10-12)
 
 
