@@ -52,7 +52,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
     if should_log_now {
         println!("-------------------------------");
-        println!("")
+        println!()
     }
 
     for info in controllers {
@@ -87,7 +87,6 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
         let (battery_percent, is_charging) =
             parse_battery_and_charging(&ParseBatteryAndChargingArgs {
-                device: &device,
                 buffer: &buffer,
                 is_bluetooth: transport.is_bluetooth,
                 should_log: should_log_now,
@@ -160,7 +159,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
                     }
                 ),
             );
-            print!("\n");
+            println!()
         }
     }
 
