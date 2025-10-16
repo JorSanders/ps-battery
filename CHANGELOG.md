@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/JorSanders/ps-battery/compare/v1.7.1...v1.7.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* print bluetooth without all caps ([f81a89f](https://github.com/JorSanders/ps-battery/commit/f81a89ffd28f8aaa156122ad1e624f3a2e7279dd))
+
 ## [1.7.1](https://github.com/JorSanders/ps-battery/compare/v1.7.0...v1.7.1) (2025-10-16)
 
 
