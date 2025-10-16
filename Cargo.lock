@@ -60,7 +60,7 @@ dependencies = [
 
 [[package]]
 name = "ps-battery"
-version = "1.7.0"
+version = "1.7.1"
 dependencies = [
  "hidapi",
  "windows",
