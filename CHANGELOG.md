@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.0](https://github.com/JorSanders/ps-battery/compare/v1.6.1...v1.7.0) (2025-10-16)
+
+
+### Features
+
+* fix and improve parsing ([80ee088](https://github.com/JorSanders/ps-battery/commit/80ee088f6b19b0f46f6f5d5c7c12611a2d20363e))
+* fix parsing, add debug logging and build ([7a50245](https://github.com/JorSanders/ps-battery/commit/7a50245cf44b214ad13bd99e65e9231465cb10fa))
+
 ## [1.6.1](https://github.com/JorSanders/ps-battery/compare/v1.6.0...v1.6.1) (2025-10-13)
 
 
