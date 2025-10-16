@@ -60,7 +60,7 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
         log_info_with(
             "Parsed controller info",
             format!(
-                "name=0x{}, transport_label={}, report_size={}",
+                "name={}, transport_label={}, report_size={}",
                 parsed_info.name, parsed_info.transport_label, parsed_info.report_size
             ),
         );
