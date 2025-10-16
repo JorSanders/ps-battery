@@ -61,3 +61,20 @@ jobs:
             target/release/ps-battery.exe.bundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build debug binary
+        run: cargo build
+
+      - name: Rename debug binary
+        shell: pwsh
+        run: |
+          Copy-Item target/debug/ps-battery.exe target/debug/ps-battery-debug.exe
+
+      - name: Upload debug binary to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: |
+            target/debug/ps-battery-debug.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

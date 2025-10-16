@@ -1,4 +1,4 @@
-use crate::ps_battery::log::log_info_with;
+use crate::ps_battery::{controller::info::TransportLabel, log::log_info_with};
 
 const USB_BATTERY_INDEX: usize = 53;
 const BLUETOOTH_BATTERY_INDEX: usize = 54;
@@ -11,12 +11,11 @@ const MASK_FULLY_CHARGED: u8 = 0b0000_0010;
 
 pub struct ParseBatteryAndChargingArgs<'a> {
     pub buffer: &'a [u8],
-    pub is_bluetooth: bool,
-    pub should_log: bool,
+    pub transport_label: TransportLabel,
 }
 
 pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bool) {
-    let battery_offset: usize = if args.is_bluetooth {
+    let battery_offset: usize = if args.transport_label == TransportLabel::Bluetooth {
         BLUETOOTH_BATTERY_INDEX
     } else {
         USB_BATTERY_INDEX
@@ -41,33 +40,31 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         battery_percent = battery_level_binary * 10;
     }
 
-    if args.is_bluetooth {
+    if args.transport_label == TransportLabel::Bluetooth {
         is_charging = (charging_byte & MASK_CHARGING_FLAG) != 0;
     } else {
         is_charging = true;
     }
 
-    if args.should_log {
-        log_info_with("Buffer", format!("{:02X?}", args.buffer));
-        log_info_with(
-            "Battery parse result",
-            format!(
-                "battery_byte=0x{:02X}, battery_level_binary={}, battery_state_binary={}, battery_percent={}, is_fully_charged={}",
-                battery_byte,
-                battery_level_binary,
-                battery_state_binary,
-                battery_percent,
-                is_fully_charged
-            ),
-        );
-        log_info_with(
-            "Charging parse result",
-            format!(
-                "charging_byte=0x{:02X}, is_charging={}",
-                charging_byte, is_charging
-            ),
-        );
-    }
+    log_info_with("Buffer", format!("{:02X?}", args.buffer));
+    log_info_with(
+        "Battery parse result",
+        format!(
+            "battery_byte=0x{:02X}, battery_level_binary={}, battery_state_binary={}, battery_percent={}, is_fully_charged={}",
+            battery_byte,
+            battery_level_binary,
+            battery_state_binary,
+            battery_percent,
+            is_fully_charged
+        ),
+    );
+    log_info_with(
+        "Charging parse result",
+        format!(
+            "charging_byte=0x{:02X}, is_charging={}",
+            charging_byte, is_charging
+        ),
+    );
 
     (battery_percent, is_charging)
 }

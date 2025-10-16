@@ -22,23 +22,20 @@ pub unsafe extern "system" fn window_proc(
     if msg == WM_TRAYICON {
         if lparam.0 as u32 == WM_RBUTTONUP || lparam.0 as u32 == WM_LBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
-            for c in get_controllers() {
-                let transport_label;
-                if c.is_bluetooth {
-                    transport_label = "Bluetooth";
-                } else {
-                    transport_label = "USB";
-                }
 
+            for controller in get_controllers() {
                 let status_label;
-                if c.is_charging {
+                if controller.is_charging {
                     status_label = "Charging";
                 } else {
                     status_label = "Not Charging";
                 }
                 let formatted = format!(
                     "{} [{}] — {}% — {}",
-                    c.name, transport_label, c.battery_percent, status_label
+                    controller.name,
+                    controller.transport_label,
+                    controller.battery_percent,
+                    status_label
                 );
 
                 let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
@@ -48,17 +45,24 @@ pub unsafe extern "system" fn window_proc(
                     eprintln!("AppendMenuW failed");
                 }
             }
-            let auto = autostart::is_enabled();
-            let auto_text: Vec<u16> = "Run on Startup".encode_utf16().chain(Some(0)).collect();
-            let auto_state = if auto { MF_CHECKED } else { MF_UNCHECKED };
+
+            let autostart_enabled = autostart::is_enabled();
+            let autostart_text: Vec<u16> = "Run on Startup".encode_utf16().chain(Some(0)).collect();
+            let autostart_state;
+            if autostart_enabled {
+                autostart_state = MF_CHECKED
+            } else {
+                autostart_state = MF_UNCHECKED
+            };
             let res = unsafe {
                 AppendMenuW(
                     menu,
-                    MF_STRING | auto_state,
+                    MF_STRING | autostart_state,
                     MENU_ID_AUTOSTART as usize,
-                    PCWSTR(auto_text.as_ptr()),
+                    PCWSTR(autostart_text.as_ptr()),
                 )
             };
+
             if res.is_err() {
                 eprintln!("AppendMenuW autostart failed");
             }
@@ -106,8 +110,10 @@ pub unsafe extern "system" fn window_proc(
         match wparam.0 as u16 {
             MENU_ID_AUTOSTART => {
                 let res = if autostart::is_enabled() {
+                    println!("Autostart disabled");
                     autostart::disable()
                 } else {
+                    println!("Autostart enabled");
                     autostart::enable()
                 };
                 if !res {
@@ -121,6 +127,7 @@ pub unsafe extern "system" fn window_proc(
                     eprintln!("Shell_NotifyIconW delete failed");
                 }
                 unsafe {
+                    println!("Closing app via tray menu");
                     PostQuitMessage(0);
                 }
             }
