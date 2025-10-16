@@ -15,7 +15,7 @@ impl fmt::Display for TransportLabel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TransportLabel::Usb => write!(f, "USB"),
-            TransportLabel::Bluetooth => write!(f, "BLUETOOTH"),
+            TransportLabel::Bluetooth => write!(f, "Bluetooth"),
         }
     }
 }
