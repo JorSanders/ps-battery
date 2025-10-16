@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/JorSanders/ps-battery/compare/v1.7.0...v1.7.1) (2025-10-16)
+
+
+### Bug Fixes
+
+* dont print 0x before name ([f97a4ab](https://github.com/JorSanders/ps-battery/commit/f97a4abdc303306dbc1318e8737f8cdb25c9c265))
+
 ## [1.7.0](https://github.com/JorSanders/ps-battery/compare/v1.6.1...v1.7.0) (2025-10-16)
 
 
