@@ -1,11 +1,11 @@
 # PS Battery
 
-<img src="./images/reason.jpg" alt="Controller dies on 5% hp" width="600" />
+<img src="./images/reason.jpg" alt="Controller dies on 5% hp" width="800" />
 
 I was so annoyed by my PlayStation controllers running out of battery without warning when playing on PC. I made this Rust app to give me a heads-up before it's too late.
 
 ## Features
-1. Every 5 minutes, checks if you have a low-battery controller connected that is not charging.
+1. Alerts you every 5 minutes if you have a low-battery controller connected that is not charging.
 2. If a low-battery controller is detected, alert the user in the following way:
     - Play a sound:
         - 30% => Windows Notify System Generic.wav
@@ -15,7 +15,15 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 3. Adds an application to the Windows tray. If you right-click this, you can see all connected controllers, their battery %, and whether they are charging or not.
 4. Via the tray, provides the option to run this application on startup (Windows login), so you will never get surprised again by a controller running out of battery. This is off by default.
 
-<img src="./images/notification.png" alt="Notification example" width="400" />
+<img src="./images/notification_30.png" alt="Notification example" width="400" />
+
+
+<img src="./images/notification_20.png" alt="Notification example" width="400" />
+
+
+<img src="./images/notification_10.png" alt="Notification example" width="400" />
+
+
 <img src="./images/tray.png" alt="Tray example" width="400" />
 
 

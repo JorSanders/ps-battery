@@ -87,6 +87,27 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
         println!();
     }
 
+    // status_list.push(ControllerStatus {
+    //     name: "DualSense Edge Wireless Controller".to_string(),
+    //     battery_percent: 30,
+    //     is_charging: false,
+    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
+    // });
+
+    // status_list.push(ControllerStatus {
+    //     name: "DualSense Wireless Controller".to_string(),
+    //     battery_percent: 20,
+    //     is_charging: false,
+    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
+    // });
+
+    // status_list.push(ControllerStatus {
+    //     name: "DualSense Wireless Controller".to_string(),
+    //     battery_percent: 10,
+    //     is_charging: false,
+    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
+    // });
+
     if now.duration_since(*last_alert) >= ALERT_INTERVAL {
         for controller_status in &status_list {
             if controller_status.battery_percent > 30 {
