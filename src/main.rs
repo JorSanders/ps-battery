@@ -2,7 +2,7 @@
 
 mod ps_battery;
 
-use crate::ps_battery::poll_controllers::{PollControllersArgs, poll_controllers};
+use crate::ps_battery::poll_controllers::poll_controllers;
 use crate::ps_battery::tray::{add_tray_icon, create_hidden_window};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -10,7 +10,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, MSG, PM_REMOVE, PeekMessageW, TranslateMessage, WM_QUIT,
 };
 
-const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(60);
+const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 fn main() {
     let hidden_window = create_hidden_window();
@@ -23,14 +23,12 @@ fn main() {
             if msg.message == WM_QUIT {
                 return;
             }
-            let _ = unsafe { TranslateMessage(&msg) };
+            let _translated = unsafe { TranslateMessage(&msg) };
             unsafe { DispatchMessageW(&msg) };
         }
 
         if last_controler_poll.elapsed() >= CONTROLLER_POLL_INTERVAL {
-            poll_controllers(&mut PollControllersArgs {
-                tray_icon: &mut tray_icon,
-            });
+            poll_controllers(&mut tray_icon);
             last_controler_poll = Instant::now();
         }
 

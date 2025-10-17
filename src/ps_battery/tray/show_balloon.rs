@@ -1,9 +1,5 @@
-use windows::{
-    Win32::UI::Shell::{
-        NIF_INFO, NIIF_ERROR, NIIF_INFO, NIIF_WARNING, NIM_MODIFY, NOTIFYICONDATAW,
-        Shell_NotifyIconW,
-    },
-    core::BOOL,
+use windows::Win32::UI::Shell::{
+    NIF_INFO, NIIF_ERROR, NIIF_INFO, NIIF_WARNING, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW,
 };
 
 pub enum BalloonIcon {
@@ -39,7 +35,12 @@ pub fn show_balloon(args: &mut ShowBalloonArgs) {
         };
 
         let res = Shell_NotifyIconW(NIM_MODIFY, args.notify);
-        if res == BOOL(0) {
+        if res.as_bool() {
+            println!(
+                "Balloon sent. Title: '{}' Message: '{}",
+                args.title, args.message
+            );
+        } else {
             eprintln!("Shell_NotifyIconW failed");
         }
     }

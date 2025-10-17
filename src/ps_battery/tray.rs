@@ -1,7 +1,7 @@
 pub mod autostart;
-pub mod balloon;
+pub mod create_hidden_window;
 pub mod menu;
-pub mod window;
+pub mod show_balloon;
 
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Shell::{
@@ -39,5 +39,5 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     notify
 }
 
-pub use balloon::{ShowBalloonArgs, show_balloon};
-pub use window::create_hidden_window;
+pub use create_hidden_window::create_hidden_window;
+pub use show_balloon::{ShowBalloonArgs, show_balloon};

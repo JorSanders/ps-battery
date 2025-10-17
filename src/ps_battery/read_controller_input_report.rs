@@ -1,9 +1,6 @@
 use crate::ps_battery::{
-    controller::{
-        info::TransportLabel,
-        report::{MaybeSendBluetoothCalibrationArgs, send_feature_report},
-    },
-    log::log_error_with,
+    get_controller_info::TransportLabel,
+    send_bluetooth_feature_report::send_bluetooth_feature_report,
 };
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 
@@ -19,27 +16,27 @@ pub fn open_device(args: &OpenDeviceArgs) -> Option<HidDevice> {
     match args.info.open_device(args.hid_api) {
         Ok(d) => {
             if let Err(err) = d.set_blocking_mode(false) {
-                log_error_with("Failed to set non-blocking mode", err);
+                println!("Failed to set non-blocking mode: '{}'", err);
             }
             Some(d)
         }
         Err(err) => {
-            log_error_with("Failed to open HID device", err);
+            println!("Failed to open HID device: '{}'", err);
             None
         }
     }
 }
 
-pub struct ReadControllerBufferArgs<'a> {
-    pub device: &'a HidDevice,
+pub struct ReadControllerInputReportArgs<'a> {
+    pub hid_device: &'a HidDevice,
     pub device_name: &'a str,
     pub buffer: &'a mut [u8],
     pub transport_label: TransportLabel,
 }
 
-pub fn read_controller_buffer(args: &mut ReadControllerBufferArgs) {
+pub fn read_controller_input_report(args: &mut ReadControllerInputReportArgs) {
     let buffer_length = args
-        .device
+        .hid_device
         .read_timeout(args.buffer, HID_REFRESH_TIMEOUT_MS)
         .unwrap_or(0);
 
@@ -47,18 +44,14 @@ pub fn read_controller_buffer(args: &mut ReadControllerBufferArgs) {
         let first_byte = args.buffer[0];
 
         if first_byte == TRUNCATED_BLUETOOTH_HEADER {
-            log_error_with(
-                "Sending Bluetooth report, to start receiving battery and charging info",
+            println!(
+                "Sending Bluetooth report, to start receiving battery and charging info. For controller : '{}'",
                 args.device_name,
             );
 
-            let calib_args = MaybeSendBluetoothCalibrationArgs {
-                hid_device: args.device,
-            };
+            send_bluetooth_feature_report(args.hid_device);
 
-            send_feature_report(&calib_args);
-
-            args.device
+            args.hid_device
                 .read_timeout(args.buffer, HID_REFRESH_TIMEOUT_MS)
                 .unwrap_or(0);
         }

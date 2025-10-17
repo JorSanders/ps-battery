@@ -1,4 +1,4 @@
-use crate::ps_battery::{controller::info::TransportLabel, log::log_info_with};
+use crate::ps_battery::get_controller_info::TransportLabel;
 
 const USB_BATTERY_INDEX: usize = 53;
 const BLUETOOTH_BATTERY_INDEX: usize = 54;
@@ -43,24 +43,14 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         true
     };
 
-    log_info_with("Buffer", format!("{:02X?}", args.buffer));
-    log_info_with(
-        "Battery parse result",
-        format!(
-            "battery_byte=0x{:02X}, battery_level_binary={}, battery_state_binary={}, battery_percent={}, is_fully_charged={}",
-            battery_byte,
-            battery_level_binary,
-            battery_state_binary,
-            battery_percent,
-            is_fully_charged
-        ),
+    println!("Buffer: {:02X?}", args.buffer);
+    println!(
+        "battery_byte=0x{:02X}, battery_level_binary={}, battery_state_binary={}, battery_percent={}, is_fully_charged={}",
+        battery_byte, battery_level_binary, battery_state_binary, battery_percent, is_fully_charged
     );
-    log_info_with(
-        "Charging parse result",
-        format!(
-            "charging_byte=0x{:02X}, is_charging={}",
-            charging_byte, is_charging
-        ),
+    println!(
+        "charging_byte=0x{:02X}, is_charging={}",
+        charging_byte, is_charging
     );
 
     (battery_percent, is_charging)

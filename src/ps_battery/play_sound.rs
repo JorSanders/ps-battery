@@ -1,4 +1,3 @@
-use super::log::log_error_with;
 use windows::Win32::Media::Audio::*;
 use windows::core::PCWSTR;
 
@@ -26,7 +25,9 @@ pub fn play_sound(args: &PlaySoundArgs) {
     let wide: Vec<u16> = file_path.encode_utf16().chain(Some(0)).collect();
     let result = unsafe { PlaySoundW(PCWSTR(wide.as_ptr()), None, SND_FILENAME | SND_ASYNC) };
 
-    if !result.as_bool() {
-        log_error_with("Failed to play sound", file_path);
+    if result.as_bool() {
+        println!("Sound played. Path: '{}'", file_path)
+    } else {
+        eprintln!("Failed to play sound '{}'", file_path);
     }
 }

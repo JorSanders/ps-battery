@@ -1,6 +1,6 @@
 use std::sync::{OnceLock, RwLock};
 
-use crate::ps_battery::controller::info::TransportLabel;
+use crate::ps_battery::get_controller_info::TransportLabel;
 
 #[derive(Clone)]
 pub struct ControllerStatus {

@@ -20,18 +20,14 @@ impl fmt::Display for TransportLabel {
     }
 }
 
-pub struct TransportInfo {
+pub struct ControllerInfo {
     pub report_size: usize,
     pub name: String,
     pub transport_label: TransportLabel,
 }
 
-pub struct DetectTransportArgs<'a> {
-    pub info: &'a DeviceInfo,
-}
-
-pub fn get_controller_info(args: &DetectTransportArgs) -> TransportInfo {
-    let path_string = args.info.path().to_string_lossy().to_ascii_uppercase();
+pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
+    let path_string = info.path().to_string_lossy().to_ascii_uppercase();
     let is_bluetooth = path_string.contains(BLUETOOTH_GUID_SUBSTRING);
     let report_size = if is_bluetooth {
         BLUETOOTH_REPORT_SIZE
@@ -43,9 +39,9 @@ pub fn get_controller_info(args: &DetectTransportArgs) -> TransportInfo {
     } else {
         TransportLabel::Usb
     };
-    let name = args.info.product_string().unwrap_or("Unknown").to_string();
+    let name = info.product_string().unwrap_or("Unknown").to_string();
 
-    TransportInfo {
+    ControllerInfo {
         transport_label,
         report_size,
         name,
