@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/JorSanders/ps-battery/compare/v1.8.0...v1.9.0) (2025-10-17)
+
+
+### Features
+
+* Add support for ps4(untested) ([c4f673d](https://github.com/JorSanders/ps-battery/commit/c4f673dc499a075f6294df897198d5d0ddb6b3b4))
+
 ## [1.8.0](https://github.com/JorSanders/ps-battery/compare/v1.7.3...v1.8.0) (2025-10-17)
 
 
