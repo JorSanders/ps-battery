@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/JorSanders/ps-battery/compare/v1.7.3...v1.8.0) (2025-10-17)
+
+
+### Features
+
+* add logging for product_id ([3112d7d](https://github.com/JorSanders/ps-battery/commit/3112d7dc746530f21ae700bca594a612c23c1394))
+* rename and format logging ([1f39c5c](https://github.com/JorSanders/ps-battery/commit/1f39c5c51af6d5e06564320e8527fb3a5f2138be))
+
+
+### Bug Fixes
+
+* dont add mock controllers to status list ([8e44aad](https://github.com/JorSanders/ps-battery/commit/8e44aada31dc6049cd62e6a20ffd3ea9cec96b4d))
+
 ## [1.7.3](https://github.com/JorSanders/ps-battery/compare/v1.7.2...v1.7.3) (2025-10-17)
 
 
