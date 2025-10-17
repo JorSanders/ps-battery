@@ -89,7 +89,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
 
     if now.duration_since(*last_alert) >= ALERT_INTERVAL {
         for controller_status in &status_list {
-            if controller_status.battery_percent < 30 {
+            if controller_status.battery_percent > 30 {
                 continue;
             }
 
