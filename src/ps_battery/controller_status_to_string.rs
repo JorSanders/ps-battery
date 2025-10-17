@@ -4,7 +4,7 @@ pub fn controller_status_to_string(status: &ControllerStatus) -> String {
     format!(
         "{} [{}] — {}% — {}",
         status.name,
-        status.transport_label,
+        status.connection_type,
         status.battery_percent,
         if status.is_charging {
             "Charging"

@@ -1,13 +1,13 @@
 use std::sync::{OnceLock, RwLock};
 
-use crate::ps_battery::get_controller_info::TransportLabel;
+use crate::ps_battery::get_controller_info::ConnectionType;
 
 #[derive(Clone)]
 pub struct ControllerStatus {
     pub name: String,
     pub battery_percent: u8,
     pub is_charging: bool,
-    pub transport_label: TransportLabel,
+    pub connection_type: ConnectionType,
 }
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 

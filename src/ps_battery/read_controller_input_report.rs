@@ -1,5 +1,5 @@
 use crate::ps_battery::{
-    get_controller_info::TransportLabel,
+    get_controller_info::ConnectionType,
     send_bluetooth_feature_report::send_bluetooth_feature_report,
 };
 use hidapi::{DeviceInfo, HidApi, HidDevice};
@@ -31,7 +31,7 @@ pub struct ReadControllerInputReportArgs<'a> {
     pub hid_device: &'a HidDevice,
     pub device_name: &'a str,
     pub buffer: &'a mut [u8],
-    pub transport_label: TransportLabel,
+    pub connection_type: ConnectionType,
 }
 
 pub fn read_controller_input_report(args: &mut ReadControllerInputReportArgs) {
@@ -40,7 +40,7 @@ pub fn read_controller_input_report(args: &mut ReadControllerInputReportArgs) {
         .read_timeout(args.buffer, HID_REFRESH_TIMEOUT_MS)
         .unwrap_or(0);
 
-    if buffer_length > 0 && args.transport_label == TransportLabel::Bluetooth {
+    if buffer_length > 0 && args.connection_type == ConnectionType::Bluetooth {
         let first_byte = args.buffer[0];
 
         if first_byte == TRUNCATED_BLUETOOTH_HEADER {

@@ -5,17 +5,17 @@ pub const USB_REPORT_SIZE: usize = 64;
 pub const BLUETOOTH_REPORT_SIZE: usize = 78;
 
 #[derive(Clone, Copy, PartialEq)]
-pub enum TransportLabel {
+pub enum ConnectionType {
     Usb,
     Bluetooth,
 }
 use std::fmt;
 
-impl fmt::Display for TransportLabel {
+impl fmt::Display for ConnectionType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TransportLabel::Usb => write!(f, "USB"),
-            TransportLabel::Bluetooth => write!(f, "Bluetooth"),
+            ConnectionType::Usb => write!(f, "USB"),
+            ConnectionType::Bluetooth => write!(f, "Bluetooth"),
         }
     }
 }
@@ -23,7 +23,7 @@ impl fmt::Display for TransportLabel {
 pub struct ControllerInfo {
     pub report_size: usize,
     pub name: String,
-    pub transport_label: TransportLabel,
+    pub connection_type: ConnectionType,
     pub product_id: u16,
 }
 
@@ -35,16 +35,16 @@ pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
     } else {
         USB_REPORT_SIZE
     };
-    let transport_label = if is_bluetooth {
-        TransportLabel::Bluetooth
+    let connection_type = if is_bluetooth {
+        ConnectionType::Bluetooth
     } else {
-        TransportLabel::Usb
+        ConnectionType::Usb
     };
     let name = info.product_string().unwrap_or("Unknown").to_string();
     let product_id = info.product_id();
 
     ControllerInfo {
-        transport_label,
+        connection_type,
         report_size,
         name,
         product_id,

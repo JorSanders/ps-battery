@@ -38,9 +38,9 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
         let parsed_info = get_controller_info(&controller_info);
 
         println!(
-            "Parsed controller info: name={}, transport_label={}, report_size={}, product_id=0x{:02X}",
+            "Parsed controller info: name={}, connection_type={}, report_size={}, product_id=0x{:02X}",
             parsed_info.name,
-            parsed_info.transport_label,
+            parsed_info.connection_type,
             parsed_info.report_size,
             parsed_info.product_id
         );
@@ -57,7 +57,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
         let mut read_args = ReadControllerInputReportArgs {
             hid_device: &hid_device,
             device_name: &parsed_info.name,
-            transport_label: parsed_info.transport_label,
+            connection_type: parsed_info.connection_type,
             buffer: &mut buffer,
         };
 
@@ -71,40 +71,40 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
         let (battery_percent, is_charging) =
             parse_battery_and_charging(&ParseBatteryAndChargingArgs {
                 buffer: &buffer,
-                transport_label: parsed_info.transport_label,
+                connection_type: parsed_info.connection_type,
             });
 
         status_list.push(ControllerStatus {
             name: parsed_info.name.clone(),
             battery_percent,
             is_charging,
-            transport_label: parsed_info.transport_label,
+            connection_type: parsed_info.connection_type,
         });
 
         println!();
         println!();
     }
 
-    // status_list.push(ControllerStatus {
-    //     name: "DualSense Edge Wireless Controller".to_string(),
-    //     battery_percent: 30,
-    //     is_charging: false,
-    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
-    // });
+    status_list.push(ControllerStatus {
+        name: "DualSense Edge Wireless Controller".to_string(),
+        battery_percent: 30,
+        is_charging: false,
+        connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
+    });
 
-    // status_list.push(ControllerStatus {
-    //     name: "DualSense Wireless Controller".to_string(),
-    //     battery_percent: 20,
-    //     is_charging: false,
-    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
-    // });
+    status_list.push(ControllerStatus {
+        name: "DualSense Wireless Controller".to_string(),
+        battery_percent: 20,
+        is_charging: false,
+        connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
+    });
 
-    // status_list.push(ControllerStatus {
-    //     name: "DualSense Wireless Controller".to_string(),
-    //     battery_percent: 10,
-    //     is_charging: false,
-    //     transport_label: crate::ps_battery::get_controller_info::TransportLabel::Bluetooth,
-    // });
+    status_list.push(ControllerStatus {
+        name: "DualSense Wireless Controller".to_string(),
+        battery_percent: 10,
+        is_charging: false,
+        connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
+    });
 
     if now.duration_since(*last_alert) >= ALERT_INTERVAL {
         for controller_status in &status_list {

@@ -32,7 +32,7 @@ pub extern "system" fn window_proc(
                 let formatted = format!(
                     "{} [{}] — {}% — {}",
                     controller.name,
-                    controller.transport_label,
+                    controller.connection_type,
                     controller.battery_percent,
                     status_label
                 );
