@@ -13,23 +13,29 @@ pub const WM_TRAYICON: u32 = 0x8000 + 1;
 const TRAY_ICON_ID: u32 = 100;
 const TRAY_TIP_TEXT: &str = "PS Battery";
 
-pub unsafe fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
-    let mut notify = NOTIFYICONDATAW::default();
-    notify.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;
-    notify.hWnd = hwnd;
-    notify.uID = TRAY_ICON_ID;
-    notify.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-    notify.uCallbackMessage = WM_TRAYICON;
-    notify.dwState = NIS_HIDDEN;
-    notify.szTip[..TRAY_TIP_TEXT.len()]
-        .copy_from_slice(&TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>()[..]);
-    unsafe {
-        notify.hIcon = LoadIconW(None, IDI_APPLICATION).expect("load icon failed");
-        let res = Shell_NotifyIconW(NIM_ADD, &mut notify);
-        if !res.as_bool() {
-            eprintln!("Shell_NotifyIconW failed");
-        }
+pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
+    let mut sz_tip = [0u16; 128];
+    let tip_utf16 = TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>();
+    sz_tip[..tip_utf16.len()].copy_from_slice(&tip_utf16);
+
+    let h_icon = unsafe { LoadIconW(None, IDI_APPLICATION).expect("load icon failed") };
+    let notify = NOTIFYICONDATAW {
+        cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
+        hWnd: hwnd,
+        uID: TRAY_ICON_ID,
+        uFlags: NIF_MESSAGE | NIF_ICON | NIF_TIP,
+        uCallbackMessage: WM_TRAYICON,
+        dwState: NIS_HIDDEN,
+        szTip: sz_tip,
+        hIcon: h_icon,
+        ..Default::default()
+    };
+
+    let res = unsafe { Shell_NotifyIconW(NIM_ADD, &notify) };
+    if !res.as_bool() {
+        eprintln!("Shell_NotifyIconW failed");
     }
+
     notify
 }
 

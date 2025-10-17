@@ -13,8 +13,8 @@ use windows::Win32::UI::WindowsAndMessaging::{
 const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(60);
 
 fn main() {
-    let hidden_window = unsafe { create_hidden_window() };
-    let mut tray_icon = unsafe { add_tray_icon(hidden_window) };
+    let hidden_window = create_hidden_window();
+    let mut tray_icon = add_tray_icon(hidden_window);
     let mut last_controler_poll = Instant::now() - CONTROLLER_POLL_INTERVAL;
 
     loop {

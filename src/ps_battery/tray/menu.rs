@@ -13,7 +13,7 @@ use crate::ps_battery::controller_store::get_controllers;
 const MENU_ID_AUTOSTART: u16 = 1001;
 const MENU_ID_EXIT: u16 = 1;
 
-pub unsafe extern "system" fn window_proc(
+pub extern "system" fn window_proc(
     hwnd: HWND,
     msg: u32,
     wparam: WPARAM,
@@ -24,12 +24,11 @@ pub unsafe extern "system" fn window_proc(
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
 
             for controller in get_controllers() {
-                let status_label;
-                if controller.is_charging {
-                    status_label = "Charging";
+                let status_label = if controller.is_charging {
+                    "Charging"
                 } else {
-                    status_label = "Not Charging";
-                }
+                    "Not Charging"
+                };
                 let formatted = format!(
                     "{} [{}] — {}% — {}",
                     controller.name,
@@ -48,11 +47,10 @@ pub unsafe extern "system" fn window_proc(
 
             let autostart_enabled = autostart::is_enabled();
             let autostart_text: Vec<u16> = "Run on Startup".encode_utf16().chain(Some(0)).collect();
-            let autostart_state;
-            if autostart_enabled {
-                autostart_state = MF_CHECKED
+            let autostart_state = if autostart_enabled {
+                MF_CHECKED
             } else {
-                autostart_state = MF_UNCHECKED
+                MF_UNCHECKED
             };
             let res = unsafe {
                 AppendMenuW(
@@ -76,13 +74,13 @@ pub unsafe extern "system" fn window_proc(
             }
 
             let mut cursor = POINT::default();
-            let cur = unsafe { GetCursorPos(&mut cursor) };
-            if cur.is_err() {
+            let cursor_pos = unsafe { GetCursorPos(&mut cursor) };
+            if cursor_pos.is_err() {
                 eprintln!("GetCursorPos failed");
             }
 
-            let fg = unsafe { SetForegroundWindow(hwnd) };
-            if !fg.as_bool() {
+            let set_foreground_result = unsafe { SetForegroundWindow(hwnd) };
+            if !set_foreground_result.as_bool() {
                 eprintln!("SetForegroundWindow failed");
             }
 
@@ -121,13 +119,13 @@ pub unsafe extern "system" fn window_proc(
                 }
             }
             MENU_ID_EXIT => {
-                let mut notify = NOTIFYICONDATAW::default();
-                let res = unsafe { Shell_NotifyIconW(NIM_DELETE, &mut notify) };
+                let notify = NOTIFYICONDATAW::default();
+                let res = unsafe { Shell_NotifyIconW(NIM_DELETE, &notify) };
                 if !res.as_bool() {
                     eprintln!("Shell_NotifyIconW delete failed");
                 }
+                println!("Closing app via tray menu");
                 unsafe {
-                    println!("Closing app via tray menu");
                     PostQuitMessage(0);
                 }
             }

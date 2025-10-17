@@ -53,7 +53,7 @@ pub fn read_controller_buffer(args: &mut ReadControllerBufferArgs) {
             );
 
             let calib_args = MaybeSendBluetoothCalibrationArgs {
-                device: args.device,
+                hid_device: args.device,
             };
 
             send_feature_report(&calib_args);

@@ -139,20 +139,18 @@ pub fn poll_controllers(args: &mut PollControllersArgs) {
 
                 play_sound(&PlaySoundArgs { alert: sound });
 
-                unsafe {
-                    let mut show_args = ShowBalloonArgs {
-                        notify: args.tray_icon,
-                        message: &format!(
-                            "{} [{}] — {}%",
-                            controller_alert.name,
-                            controller_alert.transport_label,
-                            controller_alert.battery_percent
-                        ),
-                        title: "PS controller battery low",
-                        icon,
-                    };
-                    show_balloon(&mut show_args);
-                }
+                let mut show_args = ShowBalloonArgs {
+                    notify: args.tray_icon,
+                    message: &format!(
+                        "{} [{}] — {}%",
+                        controller_alert.name,
+                        controller_alert.transport_label,
+                        controller_alert.battery_percent
+                    ),
+                    title: "PS controller battery low",
+                    icon,
+                };
+                show_balloon(&mut show_args);
             }
             *last_alert = now;
         } else {

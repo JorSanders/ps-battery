@@ -19,7 +19,7 @@ pub struct ShowBalloonArgs<'a> {
     pub icon: BalloonIcon,
 }
 
-pub unsafe fn show_balloon(args: &mut ShowBalloonArgs) {
+pub fn show_balloon(args: &mut ShowBalloonArgs) {
     unsafe {
         let title_utf16: Vec<u16> = args.title.encode_utf16().chain(Some(0)).collect();
         let msg_utf16: Vec<u16> = args.message.encode_utf16().chain(Some(0)).collect();

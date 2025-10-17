@@ -25,26 +25,23 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         return (0, false);
     }
 
-    let battery_percent: u8;
-    let is_charging: bool;
-
     let battery_byte = args.buffer[battery_offset];
     let battery_level_binary = battery_byte & MASK_LOW_NIBBLE;
     let battery_state_binary = (battery_byte & MASK_HIGH_NIBBLE) >> 4;
     let charging_byte = args.buffer[BLUETOOTH_CHARGE_FLAG_INDEX];
     let is_fully_charged = (battery_state_binary & MASK_FULLY_CHARGED) != 0;
 
-    if is_fully_charged {
-        battery_percent = 100;
+    let battery_percent = if is_fully_charged {
+        100
     } else {
-        battery_percent = battery_level_binary * 10;
-    }
+        battery_level_binary * 10
+    };
 
-    if args.transport_label == TransportLabel::Bluetooth {
-        is_charging = (charging_byte & MASK_CHARGING_FLAG) != 0;
+    let is_charging = if args.transport_label == TransportLabel::Bluetooth {
+        (charging_byte & MASK_CHARGING_FLAG) != 0
     } else {
-        is_charging = true;
-    }
+        true
+    };
 
     log_info_with("Buffer", format!("{:02X?}", args.buffer));
     log_info_with(

@@ -9,7 +9,7 @@ use super::menu::window_proc;
 
 const WINDOW_CLASS_NAME: &str = "ps_batteryHiddenWindow";
 
-pub unsafe fn create_hidden_window() -> HWND {
+pub fn create_hidden_window() -> HWND {
     let class_name = HSTRING::from(WINDOW_CLASS_NAME);
     let window_class = WNDCLASSW {
         lpfnWndProc: Some(window_proc),
