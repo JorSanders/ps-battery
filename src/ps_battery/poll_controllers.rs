@@ -1,5 +1,5 @@
 use crate::ps_battery::controller_status_to_string::controller_status_to_string;
-use crate::ps_battery::controller_store::{ControllerStatus, set_controllers};
+use crate::ps_battery::controller_store::{ControllerStatus, get_controllers, set_controllers};
 use crate::ps_battery::get_controller_info::get_controller_info;
 use crate::ps_battery::get_playstation_controllers::get_playstation_controllers;
 use crate::ps_battery::parse_battery_and_charging::{
@@ -25,6 +25,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
     let controllers = get_playstation_controllers(&mut hid_api);
 
     let mut status_list: Vec<ControllerStatus> = Vec::new();
+    let previous_controllers = get_controllers();
 
     println!("-------------------------------\n");
 
@@ -36,8 +37,10 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             parsed_info.name,
             parsed_info.connection_type,
             parsed_info.report_size,
-            parsed_info.product_id
+            parsed_info.product_id,
         );
+
+        println!("path='{}'", parsed_info.path);
 
         let hid_device = match open_device(&OpenDeviceArgs {
             hid_api: &hid_api,
@@ -58,7 +61,25 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
         read_controller_input_report(&mut read_args);
 
         if buffer[0] == 0b0 {
-            eprintln!("Buffer is empty");
+            let previous_controller = if let Some(c) = previous_controllers
+                .iter()
+                .find(|c| c.path == parsed_info.path)
+            {
+                c
+            } else {
+                eprintln!(" !! Buffer but device not found in previous result");
+                continue;
+            };
+
+            eprintln!(" !! Buffer is empty using last result");
+
+            status_list.push(ControllerStatus {
+                name: previous_controller.name.clone(),
+                battery_percent: previous_controller.battery_percent,
+                is_charging: previous_controller.is_charging,
+                connection_type: previous_controller.connection_type,
+                path: previous_controller.path.clone(),
+            });
             continue;
         }
 
@@ -74,6 +95,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             battery_percent,
             is_charging,
             connection_type: parsed_info.connection_type,
+            path: parsed_info.path,
         });
 
         println!();
@@ -144,9 +166,11 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             };
             show_balloon(&mut show_args);
         }
-    } else {
+    }
+
+    if status_list.len() == 0 {
         println!();
-        println!("No controllers require alerting");
+        println!(" -> No controllers require alerting");
         println!();
     }
 

@@ -26,8 +26,8 @@ pub fn play_sound(args: &PlaySoundArgs) {
     let result = unsafe { PlaySoundW(PCWSTR(wide.as_ptr()), None, SND_FILENAME | SND_ASYNC) };
 
     if result.as_bool() {
-        println!("Sound played. Path: '{}'", file_path)
+        println!(" -> Sound played. Path: '{}'", file_path)
     } else {
-        eprintln!("Failed to play sound '{}'", file_path);
+        eprintln!(" !! Failed to play sound '{}'", file_path);
     }
 }

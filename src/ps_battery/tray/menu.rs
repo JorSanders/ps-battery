@@ -41,7 +41,7 @@ pub extern "system" fn window_proc(
                 let res =
                     unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
                 if res.is_err() {
-                    eprintln!("AppendMenuW failed");
+                    eprintln!(" !! AppendMenuW failed");
                 }
             }
 
@@ -62,26 +62,26 @@ pub extern "system" fn window_proc(
             };
 
             if res.is_err() {
-                eprintln!("AppendMenuW autostart failed");
+                eprintln!(" !! AppendMenuW autostart failed");
             }
             let res = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
             if res.is_err() {
-                eprintln!("AppendMenuW sep failed");
+                eprintln!(" !! AppendMenuW sep failed");
             }
             let res = unsafe { AppendMenuW(menu, MF_STRING, MENU_ID_EXIT as usize, w!("Exit")) };
             if res.is_err() {
-                eprintln!("AppendMenuW exit failed");
+                eprintln!(" !! AppendMenuW exit failed");
             }
 
             let mut cursor = POINT::default();
             let cursor_pos = unsafe { GetCursorPos(&mut cursor) };
             if cursor_pos.is_err() {
-                eprintln!("GetCursorPos failed");
+                eprintln!(" !! GetCursorPos failed");
             }
 
             let set_foreground_result = unsafe { SetForegroundWindow(hwnd) };
             if !set_foreground_result.as_bool() {
-                eprintln!("SetForegroundWindow failed");
+                eprintln!(" !! SetForegroundWindow failed");
             }
 
             let popup = unsafe {
@@ -96,35 +96,35 @@ pub extern "system" fn window_proc(
                 )
             };
             if !popup.as_bool() {
-                eprintln!("TrackPopupMenu failed");
+                eprintln!(" !! TrackPopupMenu failed");
             }
 
             let res = unsafe { DestroyMenu(menu) };
             if res.is_err() {
-                eprintln!("DestroyMenu failed");
+                eprintln!(" !! DestroyMenu failed");
             }
         }
     } else if msg == WM_COMMAND {
         match wparam.0 as u16 {
             MENU_ID_AUTOSTART => {
                 let res = if autostart::is_enabled() {
-                    println!("Autostart disabled");
+                    println!(" -> Autostart disabled");
                     autostart::disable()
                 } else {
-                    println!("Autostart enabled");
+                    println!(" -> Autostart enabled");
                     autostart::enable()
                 };
                 if !res {
-                    eprintln!("autostart toggle failed");
+                    eprintln!(" !! autostart toggle failed");
                 }
             }
             MENU_ID_EXIT => {
                 let notify = NOTIFYICONDATAW::default();
                 let res = unsafe { Shell_NotifyIconW(NIM_DELETE, &notify) };
                 if !res.as_bool() {
-                    eprintln!("Shell_NotifyIconW delete failed");
+                    eprintln!(" !! Shell_NotifyIconW delete failed");
                 }
-                println!("Closing app via tray menu");
+                println!(" -> Closing app via tray menu");
                 unsafe {
                     PostQuitMessage(0);
                 }

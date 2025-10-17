@@ -9,6 +9,6 @@ pub fn send_bluetooth_feature_report(hid_device: &HidDevice) {
 
     let report_resullt = hid_device.get_feature_report(&mut report_buffer);
     if let Err(err) = report_resullt {
-        eprintln!("Failed to read feature report: '{}'", err);
+        eprintln!(" !! Failed to read feature report: '{}'", err);
     }
 }

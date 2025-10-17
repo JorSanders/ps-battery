@@ -8,13 +8,14 @@ pub struct ControllerStatus {
     pub battery_percent: u8,
     pub is_charging: bool,
     pub connection_type: ConnectionType,
+    pub path: String,
 }
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 
 pub fn set_controllers(status: Vec<ControllerStatus>) {
     if CONTROLLERS.get().is_none() {
         if CONTROLLERS.set(RwLock::new(status)).is_err() {
-            eprintln!("Failed to initialize controller store");
+            eprintln!(" !! Failed to initialize controller store");
         }
         return;
     }

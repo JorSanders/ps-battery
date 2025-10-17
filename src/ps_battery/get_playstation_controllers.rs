@@ -16,7 +16,7 @@ const SONY_PRODUCT_IDS: [u16; 4] = [
 
 pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
     if let Err(err) = hid_api.refresh_devices() {
-        eprintln!("Failed to refresh HID devices: {err}");
+        eprintln!(" !! Failed to refresh HID devices: {err}");
     }
 
     hid_api

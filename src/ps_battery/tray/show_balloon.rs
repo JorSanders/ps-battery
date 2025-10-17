@@ -37,11 +37,11 @@ pub fn show_balloon(args: &mut ShowBalloonArgs) {
         let res = Shell_NotifyIconW(NIM_MODIFY, args.notify);
         if res.as_bool() {
             println!(
-                "Balloon sent. Title: '{}' Message: '{}",
+                " -> Balloon sent. Title: '{}' Message: '{}",
                 args.title, args.message
             );
         } else {
-            eprintln!("Shell_NotifyIconW failed");
+            eprintln!(" !! Shell_NotifyIconW failed");
         }
     }
 }

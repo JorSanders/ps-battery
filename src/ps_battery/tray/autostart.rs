@@ -54,7 +54,7 @@ pub fn enable() -> bool {
         let set = RegSetValueExW(hkey, PCWSTR(name.as_ptr()), Some(0), REG_SZ, Some(bytes));
         let res = RegCloseKey(hkey);
         if res != WIN32_ERROR(0) {
-            eprintln!("RegCloseKey failed with code {:?}", res);
+            eprintln!(" !! RegCloseKey failed with code {:?}", res);
         }
 
         set.is_ok()
@@ -79,7 +79,7 @@ pub fn disable() -> bool {
         let del = RegDeleteValueW(hkey, PCWSTR(name.as_ptr()));
         let res = RegCloseKey(hkey);
         if res != WIN32_ERROR(0) {
-            eprintln!("RegCloseKey failed with code {:?}", res);
+            eprintln!(" !! RegCloseKey failed with code {:?}", res);
         }
         del.is_ok()
     }

@@ -33,7 +33,7 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
 
     let res = unsafe { Shell_NotifyIconW(NIM_ADD, &notify) };
     if !res.as_bool() {
-        eprintln!("Shell_NotifyIconW failed");
+        eprintln!(" !! Shell_NotifyIconW failed");
     }
 
     notify

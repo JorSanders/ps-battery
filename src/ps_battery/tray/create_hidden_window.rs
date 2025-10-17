@@ -21,7 +21,7 @@ pub fn create_hidden_window() -> HWND {
     unsafe {
         let res = RegisterClassW(&window_class);
         if res == 0 {
-            eprintln!("RegisterClassW failed");
+            eprintln!(" !! RegisterClassW failed");
         }
         CreateWindowExW(
             WINDOW_EX_STYLE(0),

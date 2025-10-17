@@ -25,6 +25,7 @@ pub struct ControllerInfo {
     pub name: String,
     pub connection_type: ConnectionType,
     pub product_id: u16,
+    pub path: String,
 }
 
 pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
@@ -42,11 +43,13 @@ pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
     };
     let name = info.product_string().unwrap_or("Unknown").to_string();
     let product_id = info.product_id();
+    let path = info.path().to_string_lossy().into_owned();
 
     ControllerInfo {
         connection_type,
         report_size,
         name,
         product_id,
+        path,
     }
 }

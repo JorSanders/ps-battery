@@ -21,11 +21,12 @@ fn main() {
     loop {
         let mut msg = MSG::default();
         while unsafe { PeekMessageW(&mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
-            println!("PeekMessage: 0x{:X}", msg.message);
+            println!(" > PeekMessage: 0x{:X}", msg.message);
 
             if msg.message == WM_QUIT {
                 return;
             }
+
             let _translated = unsafe { TranslateMessage(&msg) };
             unsafe { DispatchMessageW(&msg) };
         }
