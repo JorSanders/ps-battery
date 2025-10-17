@@ -2,10 +2,10 @@ use hidapi::{DeviceInfo, HidApi};
 
 const SONY_VENDOR_ID: u16 = 0x054C;
 
-const DUALSENSE_PRODUCT_ID: u16 = 0x0CE6;
-const DUALSENSE_EDGE_PRODUCT_ID: u16 = 0x0DF2;
-const DUALSHOCK_GEN_1_PRODUCT_ID: u16 = 0x05C4; // Untested
-const DUALSHOCK_GEN_2_PRODUCT_ID: u16 = 0x09CC; // Untested
+pub const DUALSENSE_PRODUCT_ID: u16 = 0x0CE6;
+pub const DUALSENSE_EDGE_PRODUCT_ID: u16 = 0x0DF2;
+pub const DUALSHOCK_GEN_1_PRODUCT_ID: u16 = 0x05C4; // Untested
+pub const DUALSHOCK_GEN_2_PRODUCT_ID: u16 = 0x09CC; // Untested
 
 const SONY_PRODUCT_IDS: [u16; 4] = [
     DUALSENSE_PRODUCT_ID,

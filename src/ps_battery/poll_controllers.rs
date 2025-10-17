@@ -72,6 +72,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
             parse_battery_and_charging(&ParseBatteryAndChargingArgs {
                 buffer: &buffer,
                 connection_type: parsed_info.connection_type,
+                product_id: parsed_info.product_id,
             });
 
         status_list.push(ControllerStatus {
