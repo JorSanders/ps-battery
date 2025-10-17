@@ -1,9 +1,7 @@
 use crate::ps_battery::controller_status_to_string::controller_status_to_string;
 use crate::ps_battery::controller_store::{ControllerStatus, set_controllers};
 use crate::ps_battery::get_controller_info::get_controller_info;
-use crate::ps_battery::get_playstation_controllers::{
-    GetPlaystationControllerArgs, get_playstation_controllers,
-};
+use crate::ps_battery::get_playstation_controllers::get_playstation_controllers;
 use crate::ps_battery::parse_battery_and_charging::{
     ParseBatteryAndChargingArgs, parse_battery_and_charging,
 };
@@ -27,10 +25,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
 
     let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
 
-    let mut enumerate_args = GetPlaystationControllerArgs {
-        hid_api: &mut hid_api,
-    };
-    let controllers = get_playstation_controllers(&mut enumerate_args);
+    let controllers = get_playstation_controllers(&mut hid_api);
 
     let last_alert_mutex = LAST_ALERT_LOCK.get_or_init(|| Mutex::new(now - ALERT_INTERVAL));
     let mut last_alert = last_alert_mutex.lock().unwrap();
@@ -43,8 +38,11 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
         let parsed_info = get_controller_info(&controller_info);
 
         println!(
-            "Parsed controller info: name={}, transport_label={}, report_size={}",
-            parsed_info.name, parsed_info.transport_label, parsed_info.report_size
+            "Parsed controller info: name={}, transport_label={}, report_size={}, product_id=0x{:02X}",
+            parsed_info.name,
+            parsed_info.transport_label,
+            parsed_info.report_size,
+            parsed_info.product_id
         );
 
         let hid_device = match open_device(&OpenDeviceArgs {
@@ -114,6 +112,8 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
                 continue;
             }
 
+            *last_alert = now;
+
             let (sound, icon) = if controller_status.battery_percent <= 10 {
                 (AlertSound::Critical, BalloonIcon::Error)
             } else if controller_status.battery_percent <= 20 {
@@ -135,7 +135,6 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
             };
             show_balloon(&mut show_args);
         }
-        *last_alert = now;
     } else {
         println!();
         println!("No controllers require alerting");

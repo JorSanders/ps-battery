@@ -24,6 +24,7 @@ pub struct ControllerInfo {
     pub report_size: usize,
     pub name: String,
     pub transport_label: TransportLabel,
+    pub product_id: u16,
 }
 
 pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
@@ -40,10 +41,12 @@ pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
         TransportLabel::Usb
     };
     let name = info.product_string().unwrap_or("Unknown").to_string();
+    let product_id = info.product_id();
 
     ControllerInfo {
         transport_label,
         report_size,
         name,
+        product_id,
     }
 }
