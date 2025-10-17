@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.3](https://github.com/JorSanders/ps-battery/compare/v1.7.2...v1.7.3) (2025-10-17)
+
+
+### Bug Fixes
+
+* Another round of refactors, fix clippy, and update notification msg ([f7cd237](https://github.com/JorSanders/ps-battery/commit/f7cd23753e64b591339a7c5e2cc06bfd51b5ca64))
+* remove clippy warnings ([0855c22](https://github.com/JorSanders/ps-battery/commit/0855c22036ea0a7f2956a6b2e852cfd519a148dd))
+* sent notification if battery is below not above 30% ([11a9fbb](https://github.com/JorSanders/ps-battery/commit/11a9fbb9d43e75648e4e48fd5d133dbca71e62cc))
+
 ## [1.7.2](https://github.com/JorSanders/ps-battery/compare/v1.7.1...v1.7.2) (2025-10-16)
 
 
