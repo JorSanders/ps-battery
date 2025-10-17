@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.0](https://github.com/JorSanders/ps-battery/compare/v1.9.0...v1.10.0) (2025-10-17)
+
+
+### Features
+
+* log windows peek messages ([eec695e](https://github.com/JorSanders/ps-battery/commit/eec695ee9072d567872ad9068006ab60ed677f9c))
+* remember controllers in case report reading fails. Prettier logging ([057d4b6](https://github.com/JorSanders/ps-battery/commit/057d4b608ba810754af3c617dfa6b039a0acad06))
+
 ## [1.9.0](https://github.com/JorSanders/ps-battery/compare/v1.8.0...v1.9.0) (2025-10-17)
 
 
