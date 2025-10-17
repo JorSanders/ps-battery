@@ -2,7 +2,7 @@
 
 mod ps_battery;
 
-use crate::ps_battery::poll_controllers::poll_controllers;
+use crate::ps_battery::poll_controllers::{ALERT_INTERVAL, poll_controllers};
 use crate::ps_battery::tray::{add_tray_icon, create_hidden_window};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -16,10 +16,13 @@ fn main() {
     let hidden_window = create_hidden_window();
     let mut tray_icon = add_tray_icon(hidden_window);
     let mut last_controler_poll = Instant::now() - CONTROLLER_POLL_INTERVAL;
+    let mut last_alert_sent = Instant::now() - ALERT_INTERVAL;
 
     loop {
         let mut msg = MSG::default();
         while unsafe { PeekMessageW(&mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
+            println!("PeekMessage: 0x{:X}", msg.message);
+
             if msg.message == WM_QUIT {
                 return;
             }
@@ -28,7 +31,7 @@ fn main() {
         }
 
         if last_controler_poll.elapsed() >= CONTROLLER_POLL_INTERVAL {
-            poll_controllers(&mut tray_icon);
+            poll_controllers(&mut tray_icon, &mut last_alert_sent);
             last_controler_poll = Instant::now();
         }
 

@@ -12,23 +12,17 @@ use crate::ps_battery::read_controller_input_report::{
 use crate::ps_battery::tray::show_balloon::BalloonIcon;
 use crate::ps_battery::tray::{ShowBalloonArgs, show_balloon};
 use hidapi::HidApi;
-use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
-static LAST_ALERT_LOCK: OnceLock<Mutex<Instant>> = OnceLock::new();
+pub const ALERT_INTERVAL: Duration = Duration::from_secs(300);
 
-const ALERT_INTERVAL: Duration = Duration::from_secs(300);
-
-pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
+pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut Instant) {
     let now = Instant::now();
 
     let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
 
     let controllers = get_playstation_controllers(&mut hid_api);
-
-    let last_alert_mutex = LAST_ALERT_LOCK.get_or_init(|| Mutex::new(now - ALERT_INTERVAL));
-    let mut last_alert = last_alert_mutex.lock().unwrap();
 
     let mut status_list: Vec<ControllerStatus> = Vec::new();
 
@@ -88,6 +82,20 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
 
     // status_list.push(ControllerStatus {
     //     name: "DualSense Edge Wireless Controller".to_string(),
+    //     battery_percent: 60,
+    //     is_charging: false,
+    //     connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
+    // });
+
+    // status_list.push(ControllerStatus {
+    //     name: "DualSense Wireless Controller".to_string(),
+    //     battery_percent: 40,
+    //     is_charging: false,
+    //     connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
+    // });
+
+    // status_list.push(ControllerStatus {
+    //     name: "DualSense Edge Wireless Controller".to_string(),
     //     battery_percent: 30,
     //     is_charging: false,
     //     connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
@@ -107,13 +115,13 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW) {
     //     connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
     // });
 
-    if now.duration_since(*last_alert) >= ALERT_INTERVAL {
+    if now.duration_since(*last_alert_sent) >= ALERT_INTERVAL {
         for controller_status in &status_list {
             if controller_status.battery_percent > 30 {
                 continue;
             }
 
-            *last_alert = now;
+            *last_alert_sent = now;
 
             let (sound, icon) = if controller_status.battery_percent <= 10 {
                 (AlertSound::Critical, BalloonIcon::Error)
