@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/JorSanders/ps-battery/compare/v1.13.1...v1.14.0) (2025-10-18)
+
+
+### Features
+
+* only instantatie hid_api once. and way more logging ([7c9d8f3](https://github.com/JorSanders/ps-battery/commit/7c9d8f3d207b681798f94a26a7942ebed8def23a))
+
 ## [1.13.1](https://github.com/JorSanders/ps-battery/compare/v1.13.0...v1.13.1) (2025-10-18)
 
 
