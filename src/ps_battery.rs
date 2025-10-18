@@ -6,5 +6,5 @@ pub mod parse_battery_and_charging;
 pub mod play_sound;
 pub mod poll_controllers;
 pub mod read_controller_input_report;
-pub mod send_bluetooth_feature_report;
+pub mod send_controller_feature_report;
 pub mod tray;

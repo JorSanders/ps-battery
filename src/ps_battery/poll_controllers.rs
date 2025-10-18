@@ -33,14 +33,11 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
         let parsed_info = get_controller_info(&controller_info);
 
         println!(
-            "Parsed controller info: name={}, connection_type={}, report_size={}, product_id=0x{:02X}",
-            parsed_info.name,
-            parsed_info.connection_type,
-            parsed_info.report_size,
-            parsed_info.product_id,
+            " -> get_controller_info: name={}, connection_type={}, product_id=0x{:02X}",
+            parsed_info.name, parsed_info.connection_type, parsed_info.product_id,
         );
 
-        println!("path='{}'", parsed_info.path);
+        println!(" -> path='{}'", parsed_info.path);
 
         let hid_device = match open_device(&OpenDeviceArgs {
             hid_api: &hid_api,
@@ -50,24 +47,23 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             None => continue,
         };
 
-        let mut buffer = vec![0u8; parsed_info.report_size];
         let mut read_args = ReadControllerInputReportArgs {
             hid_device: &hid_device,
             device_name: &parsed_info.name,
             connection_type: parsed_info.connection_type,
-            buffer: &mut buffer,
+            product_id: parsed_info.product_id,
         };
 
-        read_controller_input_report(&mut read_args);
+        let buffer = read_controller_input_report(&mut read_args);
 
-        if buffer[0] == 0b0 {
+        if buffer.len() == 0 || buffer[0] == 0b0 {
             let previous_controller = if let Some(c) = previous_controllers
                 .iter()
                 .find(|c| c.path == parsed_info.path)
             {
                 c
             } else {
-                eprintln!(" !! Buffer but device not found in previous result");
+                eprintln!(" !! Buffer is empty but device not found in previous result");
                 continue;
             };
 
@@ -100,6 +96,13 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
 
         println!();
         println!();
+    }
+
+    if status_list.len() == 0 {
+        println!();
+        println!(" -> No controllers connected");
+        println!();
+        return;
     }
 
     // status_list.push(ControllerStatus {

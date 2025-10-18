@@ -62,9 +62,8 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         battery_level_nibble * 10
     };
 
-    println!("buffer: {:02X?}", args.buffer);
     println!(
-        "battery_byte_index={}, battery_byte=0b{:08b}, battery_level_nibble=0b{:04b}, battery_state_nibble=0b{:04b}, battery_raw={}, battery_percent={}, is_fully_charged={}",
+        " -> battery_byte_index={}, battery_byte=0b{:08b}, battery_level_nibble=0b{:04b}, battery_state_nibble=0b{:04b}, battery_raw={}, battery_percent={}, is_fully_charged={}",
         battery_byte_index,
         battery_byte,
         battery_level_nibble,
@@ -74,7 +73,7 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         is_fully_charged
     );
     println!(
-        "charge_byte_index={}, charging_byte=0b{:08b}, is_charging={}",
+        " -> charge_byte_index={}, charging_byte=0b{:08b}, is_charging={}",
         charge_byte_index, charging_byte, is_charging
     );
 

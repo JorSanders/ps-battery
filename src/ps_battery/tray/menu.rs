@@ -23,7 +23,9 @@ pub extern "system" fn window_proc(
         if lparam.0 as u32 == WM_RBUTTONUP || lparam.0 as u32 == WM_LBUTTONUP {
             let menu = unsafe { CreatePopupMenu() }.expect("create menu failed");
 
-            for controller in get_controllers() {
+            let controllers = get_controllers();
+
+            for controller in &controllers {
                 let status_label = if controller.is_charging {
                     "Charging"
                 } else {
@@ -40,6 +42,25 @@ pub extern "system" fn window_proc(
                 let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
                 let res =
                     unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
+                if res.is_err() {
+                    eprintln!(" !! AppendMenuW failed");
+                }
+            }
+
+            if controllers.len() == 0 {
+                let res = unsafe {
+                    let no_controllers_text: Vec<u16> = "No controllers connected"
+                        .encode_utf16()
+                        .chain(Some(0))
+                        .collect();
+
+                    AppendMenuW(
+                        menu,
+                        MF_STRING | MF_GRAYED,
+                        0,
+                        PCWSTR(no_controllers_text.as_ptr()),
+                    )
+                };
                 if res.is_err() {
                     eprintln!(" !! AppendMenuW failed");
                 }

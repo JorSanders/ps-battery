@@ -1,8 +1,6 @@
 use hidapi::DeviceInfo;
 
 const BLUETOOTH_GUID_SUBSTRING: &str = "00001124-0000-1000-8000-00805F9B34FB";
-pub const USB_REPORT_SIZE: usize = 64;
-pub const BLUETOOTH_REPORT_SIZE: usize = 78;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum ConnectionType {
@@ -21,7 +19,6 @@ impl fmt::Display for ConnectionType {
 }
 
 pub struct ControllerInfo {
-    pub report_size: usize,
     pub name: String,
     pub connection_type: ConnectionType,
     pub product_id: u16,
@@ -31,11 +28,6 @@ pub struct ControllerInfo {
 pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
     let path_string = info.path().to_string_lossy().to_ascii_uppercase();
     let is_bluetooth = path_string.contains(BLUETOOTH_GUID_SUBSTRING);
-    let report_size = if is_bluetooth {
-        BLUETOOTH_REPORT_SIZE
-    } else {
-        USB_REPORT_SIZE
-    };
     let connection_type = if is_bluetooth {
         ConnectionType::Bluetooth
     } else {
@@ -47,7 +39,6 @@ pub fn get_controller_info(info: &DeviceInfo) -> ControllerInfo {
 
     ControllerInfo {
         connection_type,
-        report_size,
         name,
         product_id,
         path,

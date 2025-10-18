@@ -15,13 +15,17 @@ const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(30);
 fn main() {
     let hidden_window = create_hidden_window();
     let mut tray_icon = add_tray_icon(hidden_window);
-    let mut last_controler_poll = Instant::now() - CONTROLLER_POLL_INTERVAL;
-    let mut last_alert_sent = Instant::now() - ALERT_INTERVAL;
+    let mut last_controler_poll = Instant::now()
+        .checked_sub(CONTROLLER_POLL_INTERVAL)
+        .unwrap_or_else(Instant::now);
+    let mut last_alert_sent = Instant::now()
+        .checked_sub(ALERT_INTERVAL)
+        .unwrap_or_else(Instant::now);
 
     loop {
         let mut msg = MSG::default();
         while unsafe { PeekMessageW(&mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
-            println!(" > PeekMessage: 0x{:X}", msg.message);
+            println!(" -> PeekMessage: 0x{:X}", msg.message);
 
             if msg.message == WM_QUIT {
                 return;
