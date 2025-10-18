@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/JorSanders/ps-battery/compare/v1.11.0...v1.12.0) (2025-10-18)
+
+
+### Features
+
+* try to open device if the buffer is empty ([869a814](https://github.com/JorSanders/ps-battery/commit/869a814c88b193b1a17562ce2c0d715fdf0553c5))
+
 ## [1.11.0](https://github.com/JorSanders/ps-battery/compare/v1.10.0...v1.11.0) (2025-10-18)
 
 
