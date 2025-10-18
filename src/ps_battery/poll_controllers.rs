@@ -57,40 +57,33 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
         let buffer = read_controller_input_report(&mut read_args);
 
         if buffer.len() == 0 || buffer[0] == 0b0 {
-            match controller_info.open_device(&hid_api) {
-                Ok(device) => {
-                    drop(device);
+            let previous_controller = if let Some(c) = previous_controllers
+                .iter()
+                .find(|c| c.path == parsed_info.path)
+            {
+                c
+            } else {
+                eprintln!(" !! Buffer is empty and device not found in previous results");
+                continue;
+            };
 
-                    let previous_controller = if let Some(c) = previous_controllers
-                        .iter()
-                        .find(|c| c.path == parsed_info.path)
-                    {
-                        c
-                    } else {
-                        eprintln!(" !! Buffer is empty but device not found in previous result");
-                        continue;
-                    };
-
-                    eprintln!(" !! Buffer is empty using last result");
-
-                    status_list.push(ControllerStatus {
-                        name: previous_controller.name.clone(),
-                        battery_percent: previous_controller.battery_percent,
-                        is_charging: previous_controller.is_charging,
-                        connection_type: previous_controller.connection_type,
-                        path: previous_controller.path.clone(),
-                    });
-                }
-                Err(err) => {
-                    eprintln!(" !! Failed to open device {}", err);
-                    println!(
-                        " -> Failed to open device assume it's disconnected {}",
-                        parsed_info.name
-                    );
-
-                    continue;
-                }
+            if previous_controller.last_read_failed {
+                eprintln!(" !! Buffer is empty and last read also failed");
+                continue;
             }
+
+            eprintln!(" !! Buffer is empty using last result");
+
+            status_list.push(ControllerStatus {
+                name: previous_controller.name.clone(),
+                battery_percent: previous_controller.battery_percent,
+                is_charging: previous_controller.is_charging,
+                connection_type: previous_controller.connection_type,
+                path: previous_controller.path.clone(),
+                last_read_failed: true,
+            });
+
+            continue;
         }
 
         let (battery_percent, is_charging) =
@@ -106,6 +99,7 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             is_charging,
             connection_type: parsed_info.connection_type,
             path: parsed_info.path,
+            last_read_failed: false,
         });
 
         println!();

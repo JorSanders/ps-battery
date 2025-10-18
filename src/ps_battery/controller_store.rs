@@ -9,6 +9,7 @@ pub struct ControllerStatus {
     pub is_charging: bool,
     pub connection_type: ConnectionType,
     pub path: String,
+    pub last_read_failed: bool,
 }
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 
