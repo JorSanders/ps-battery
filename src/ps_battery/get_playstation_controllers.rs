@@ -15,13 +15,22 @@ const SONY_PRODUCT_IDS: [u16; 4] = [
 ];
 
 pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
+    println!(" -> Refreshing hidapi devices");
     if let Err(err) = hid_api.refresh_devices() {
         eprintln!(" !! Failed to refresh HID devices: {err}");
     }
+    println!(" -> Refreshed hidapi devices");
 
-    hid_api
-        .device_list()
+    let devices: Vec<DeviceInfo> = hid_api.device_list().cloned().collect();
+
+    println!(" -> hid device count count {}", devices.len());
+
+    let controllers: Vec<DeviceInfo> = devices
+        .into_iter()
         .filter(|d| d.vendor_id() == SONY_VENDOR_ID && SONY_PRODUCT_IDS.contains(&d.product_id()))
-        .cloned()
-        .collect()
+        .collect();
+
+    println!(" -> controller count {}", controllers.len());
+
+    controllers
 }

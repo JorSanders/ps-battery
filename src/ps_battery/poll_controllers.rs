@@ -17,12 +17,14 @@ use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
 pub const ALERT_INTERVAL: Duration = Duration::from_secs(300);
 
-pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut Instant) {
+pub fn poll_controllers(
+    hid_api: &mut HidApi,
+    tray_icon: &mut NOTIFYICONDATAW,
+    last_alert_sent: &mut Instant,
+) {
     let now = Instant::now();
 
-    let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
-
-    let controllers = get_playstation_controllers(&mut hid_api);
+    let controllers = get_playstation_controllers(hid_api);
 
     let mut status_list: Vec<ControllerStatus> = Vec::new();
     let previous_controllers = get_controllers();
@@ -149,10 +151,12 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
     // });
 
     if now.duration_since(*last_alert_sent) >= ALERT_INTERVAL {
+        let mut alert_sent = false;
         for controller_status in &status_list {
             if controller_status.battery_percent > 30 {
                 continue;
             }
+            alert_sent = true;
 
             *last_alert_sent = now;
 
@@ -177,12 +181,9 @@ pub fn poll_controllers(tray_icon: &mut NOTIFYICONDATAW, last_alert_sent: &mut I
             };
             show_balloon(&mut show_args);
         }
-    }
-
-    if status_list.len() == 0 {
-        println!();
-        println!(" -> No controllers require alerting");
-        println!();
+        if !alert_sent {
+            println!(" -> No alerts sent");
+        }
     }
 
     set_controllers(status_list);

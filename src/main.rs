@@ -4,6 +4,7 @@ mod ps_battery;
 
 use crate::ps_battery::poll_controllers::{ALERT_INTERVAL, poll_controllers};
 use crate::ps_battery::tray::{add_tray_icon, create_hidden_window};
+use hidapi::HidApi;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use windows::Win32::UI::WindowsAndMessaging::{
@@ -21,6 +22,11 @@ fn main() {
     let mut last_alert_sent = Instant::now()
         .checked_sub(ALERT_INTERVAL)
         .unwrap_or_else(Instant::now);
+    println!(" -> initializing hidapi");
+    let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
+    println!(" -> initialized hidapi");
+
+    println!(" -> hid device count {}", hid_api.device_list().count());
 
     loop {
         let mut msg = MSG::default();
@@ -36,7 +42,7 @@ fn main() {
         }
 
         if last_controler_poll.elapsed() >= CONTROLLER_POLL_INTERVAL {
-            poll_controllers(&mut tray_icon, &mut last_alert_sent);
+            poll_controllers(&mut hid_api, &mut tray_icon, &mut last_alert_sent);
             last_controler_poll = Instant::now();
         }
 

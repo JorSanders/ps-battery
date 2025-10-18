@@ -10,6 +10,7 @@ use super::menu::window_proc;
 const WINDOW_CLASS_NAME: &str = "ps_batteryHiddenWindow";
 
 pub fn create_hidden_window() -> HWND {
+    println!(" -> Creating hidding window");
     let class_name = HSTRING::from(WINDOW_CLASS_NAME);
     let window_class = WNDCLASSW {
         lpfnWndProc: Some(window_proc),
@@ -23,7 +24,7 @@ pub fn create_hidden_window() -> HWND {
         if res == 0 {
             eprintln!(" !! RegisterClassW failed");
         }
-        CreateWindowExW(
+        let hidden_window = CreateWindowExW(
             WINDOW_EX_STYLE(0),
             &class_name,
             &HSTRING::from(""),
@@ -37,6 +38,8 @@ pub fn create_hidden_window() -> HWND {
             None,
             None,
         )
-        .expect("create hidden window failed")
+        .expect("create hidden window failed");
+        println!(" -> Created hidding window");
+        hidden_window
     }
 }
