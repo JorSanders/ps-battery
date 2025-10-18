@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/JorSanders/ps-battery/compare/v1.10.0...v1.11.0) (2025-10-18)
+
+
+### Features
+
+* menu items for no controllers, handle ps4 feature report, safer buffer ([01635e7](https://github.com/JorSanders/ps-battery/commit/01635e7fcce4a1f885cf74ab6c8eec1a4343866a))
+
 ## [1.10.0](https://github.com/JorSanders/ps-battery/compare/v1.9.0...v1.10.0) (2025-10-17)
 
 
