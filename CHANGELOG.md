@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.1](https://github.com/JorSanders/ps-battery/compare/v1.13.0...v1.13.1) (2025-10-18)
+
+
+### Bug Fixes
+
+* dont wrap whole show balloon in unsafe ([c937af7](https://github.com/JorSanders/ps-battery/commit/c937af70f6d0d96b96feed565c29a955626c9d6b))
+* keep track of last_read_failed to remove zombie controllers ([2be457a](https://github.com/JorSanders/ps-battery/commit/2be457a888753f3e37a0ce2eb65038c3bdfdb2ee))
+
 ## [1.13.0](https://github.com/JorSanders/ps-battery/compare/v1.12.0...v1.13.0) (2025-10-18)
 
 
