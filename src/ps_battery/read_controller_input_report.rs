@@ -4,7 +4,7 @@ use crate::ps_battery::{
 };
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 
-const HID_REFRESH_TIMEOUT_MS: i32 = 400;
+const HID_REFRESH_TIMEOUT_MS: i32 = 1000;
 const TRUNCATED_BLUETOOTH_HEADER: u8 = 0x01;
 const INITIAL_BUFFER_SIZE: usize = 100;
 
