@@ -80,6 +80,7 @@ pub fn poll_controllers(
                 name: previous_controller.name.clone(),
                 battery_percent: previous_controller.battery_percent,
                 is_charging: previous_controller.is_charging,
+                is_fully_charged: previous_controller.is_fully_charged,
                 connection_type: previous_controller.connection_type,
                 path: previous_controller.path.clone(),
                 last_read_failed: true,
@@ -88,7 +89,7 @@ pub fn poll_controllers(
             continue;
         }
 
-        let (battery_percent, is_charging) =
+        let (battery_percent, is_charging, is_fully_charged) =
             parse_battery_and_charging(&ParseBatteryAndChargingArgs {
                 buffer: &buffer,
                 connection_type: parsed_info.connection_type,
@@ -99,6 +100,7 @@ pub fn poll_controllers(
             name: parsed_info.name.clone(),
             battery_percent,
             is_charging,
+            is_fully_charged,
             connection_type: parsed_info.connection_type,
             path: parsed_info.path,
             last_read_failed: false,

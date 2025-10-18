@@ -11,7 +11,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, MSG, PM_REMOVE, PeekMessageW, TranslateMessage, WM_QUIT,
 };
 
-const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(30);
+const CONTROLLER_POLL_INTERVAL: Duration = Duration::from_secs(5);
 
 fn main() {
     let hidden_window = create_hidden_window();

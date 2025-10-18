@@ -8,6 +8,8 @@ pub fn controller_status_to_string(status: &ControllerStatus) -> String {
         status.battery_percent,
         if status.is_charging {
             "Charging"
+        } else if status.is_fully_charged {
+            "Fully charged"
         } else {
             "Not Charging"
         }

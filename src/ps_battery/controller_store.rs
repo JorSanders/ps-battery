@@ -7,6 +7,7 @@ pub struct ControllerStatus {
     pub name: String,
     pub battery_percent: u8,
     pub is_charging: bool,
+    pub is_fully_charged: bool,
     pub connection_type: ConnectionType,
     pub path: String,
     pub last_read_failed: bool,

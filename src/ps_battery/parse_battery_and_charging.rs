@@ -21,7 +21,7 @@ pub struct ParseBatteryAndChargingArgs<'a> {
     pub product_id: u16,
 }
 
-pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bool) {
+pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bool, bool) {
     let battery_byte_index = match args.product_id {
         DUALSENSE_PRODUCT_ID | DUALSENSE_EDGE_PRODUCT_ID => {
             if args.connection_type == ConnectionType::Bluetooth {
@@ -31,11 +31,11 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
             }
         }
         DUALSHOCK_GEN_1_PRODUCT_ID | DUALSHOCK_GEN_2_PRODUCT_ID => DUALSHOCK_BATTERY_BYTE_INDEX,
-        _ => return (0, false),
+        _ => 0,
     };
 
     if battery_byte_index >= args.buffer.len() || battery_byte_index == 0 {
-        return (u8::MAX, false);
+        return (u8::MAX, false, false);
     }
 
     let battery_byte = args.buffer[battery_byte_index];
@@ -63,5 +63,5 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         is_fully_charged
     );
 
-    (battery_percent, is_charging)
+    (battery_percent, is_charging, is_fully_charged)
 }

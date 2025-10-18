@@ -8,6 +8,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 use windows::core::{PCWSTR, w};
 
 use super::{WM_TRAYICON, autostart};
+use crate::ps_battery::controller_status_to_string::controller_status_to_string;
 use crate::ps_battery::controller_store::get_controllers;
 
 const MENU_ID_AUTOSTART: u16 = 1001;
@@ -26,19 +27,7 @@ pub extern "system" fn window_proc(
             let controllers = get_controllers();
 
             for controller in &controllers {
-                let status_label = if controller.is_charging {
-                    "Charging"
-                } else {
-                    "Not Charging"
-                };
-                let formatted = format!(
-                    "{} [{}] — {}% — {}",
-                    controller.name,
-                    controller.connection_type,
-                    controller.battery_percent,
-                    status_label
-                );
-
+                let formatted = controller_status_to_string(controller);
                 let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
                 let res =
                     unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
