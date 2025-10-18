@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/JorSanders/ps-battery/compare/v1.12.0...v1.13.0) (2025-10-18)
+
+
+### Features
+
+* add version info to tray tip text ([d0878d8](https://github.com/JorSanders/ps-battery/commit/d0878d84e399205b7c67178c30979bcbef4fa992))
+
 ## [1.12.0](https://github.com/JorSanders/ps-battery/compare/v1.11.0...v1.12.0) (2025-10-18)
 
 
