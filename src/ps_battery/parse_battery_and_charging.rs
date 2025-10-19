@@ -1,9 +1,8 @@
-use crate::ps_battery::{
-    get_controller_info::ConnectionType,
-    get_playstation_controllers::{
-        DUALSENSE_EDGE_PRODUCT_ID, DUALSENSE_PRODUCT_ID, DUALSHOCK_GEN_1_PRODUCT_ID,
-        DUALSHOCK_GEN_2_PRODUCT_ID,
-    },
+use std::u8;
+
+use crate::ps_battery::get_playstation_controllers::{
+    DUALSENSE_EDGE_PRODUCT_ID, DUALSENSE_PRODUCT_ID, DUALSHOCK_GEN_1_PRODUCT_ID,
+    DUALSHOCK_GEN_2_PRODUCT_ID,
 };
 
 const USB_BATTERY_BYTE_INDEX: usize = 53;
@@ -17,25 +16,44 @@ const MASK_FULLY_CHARGED: u8 = 0b0000_0010;
 
 pub struct ParseBatteryAndChargingArgs<'a> {
     pub buffer: &'a [u8],
-    pub connection_type: ConnectionType,
+    pub is_bluetooth: bool,
     pub product_id: u16,
 }
 
-pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bool, bool) {
+pub struct BatteryAndChargingResult {
+    pub battery_percent: u8,
+    pub is_charging: bool,
+    pub is_fully_charged: bool,
+}
+
+pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> BatteryAndChargingResult {
     let battery_byte_index = match args.product_id {
         DUALSENSE_PRODUCT_ID | DUALSENSE_EDGE_PRODUCT_ID => {
-            if args.connection_type == ConnectionType::Bluetooth {
+            if args.is_bluetooth {
                 BLUETOOTH_BATTERY_BYTE_INDEX
             } else {
                 USB_BATTERY_BYTE_INDEX
             }
         }
         DUALSHOCK_GEN_1_PRODUCT_ID | DUALSHOCK_GEN_2_PRODUCT_ID => DUALSHOCK_BATTERY_BYTE_INDEX,
-        _ => 0,
+        _ => {
+            eprintln!(" !! Product_id not known");
+
+            return BatteryAndChargingResult {
+                battery_percent: u8::MAX,
+                is_charging: false,
+                is_fully_charged: false,
+            };
+        }
     };
 
-    if battery_byte_index >= args.buffer.len() || battery_byte_index == 0 {
-        return (u8::MAX, false, false);
+    if battery_byte_index >= args.buffer.len() {
+        eprintln!(" !! Battery index out of buffer bounds");
+        return BatteryAndChargingResult {
+            battery_percent: u8::MAX,
+            is_charging: false,
+            is_fully_charged: false,
+        };
     }
 
     let battery_byte = args.buffer[battery_byte_index];
@@ -63,5 +81,9 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> (u8, bo
         is_fully_charged
     );
 
-    (battery_percent, is_charging, is_fully_charged)
+    BatteryAndChargingResult {
+        battery_percent,
+        is_charging,
+        is_fully_charged,
+    }
 }

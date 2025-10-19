@@ -1,7 +1,4 @@
-use crate::ps_battery::{
-    get_controller_info::ConnectionType,
-    send_controller_feature_report::send_controller_feature_report,
-};
+use crate::ps_battery::send_controller_feature_report::send_controller_feature_report;
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 
 const HID_REFRESH_TIMEOUT_MS: i32 = 1000;
@@ -31,7 +28,7 @@ pub fn open_device(args: &OpenDeviceArgs) -> Option<HidDevice> {
 pub struct ReadControllerInputReportArgs<'a> {
     pub hid_device: &'a HidDevice,
     pub device_name: &'a str,
-    pub connection_type: ConnectionType,
+    pub is_bluetooth: bool,
     pub product_id: u16,
 }
 
@@ -58,9 +55,7 @@ pub fn read_controller_input_report(args: &ReadControllerInputReportArgs) -> Vec
     if buffer_length > 0 {
         let report_header = buffer[0];
 
-        if report_header == TRUNCATED_BLUETOOTH_HEADER
-            && args.connection_type == ConnectionType::Bluetooth
-        {
+        if report_header == TRUNCATED_BLUETOOTH_HEADER && args.is_bluetooth {
             println!(
                 " -> Truncated header detected. Sending feature report for controller : '{}'",
                 args.device_name,

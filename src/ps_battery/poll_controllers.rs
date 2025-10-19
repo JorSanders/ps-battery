@@ -35,8 +35,8 @@ pub fn poll_controllers(
         let parsed_info = get_controller_info(&controller_info);
 
         println!(
-            " -> get_controller_info: name={}, connection_type={}, product_id=0x{:02X}",
-            parsed_info.name, parsed_info.connection_type, parsed_info.product_id,
+            " -> get_controller_info: name={}, is_bluetooth={}, product_id=0x{:02X}",
+            parsed_info.name, parsed_info.is_bluetooth, parsed_info.product_id,
         );
 
         println!(" -> path='{}'", parsed_info.path);
@@ -52,7 +52,7 @@ pub fn poll_controllers(
         let mut read_args = ReadControllerInputReportArgs {
             hid_device: &hid_device,
             device_name: &parsed_info.name,
-            connection_type: parsed_info.connection_type,
+            is_bluetooth: parsed_info.is_bluetooth,
             product_id: parsed_info.product_id,
         };
 
@@ -81,7 +81,7 @@ pub fn poll_controllers(
                 battery_percent: previous_controller.battery_percent,
                 is_charging: previous_controller.is_charging,
                 is_fully_charged: previous_controller.is_fully_charged,
-                connection_type: previous_controller.connection_type,
+                is_bluetooth: previous_controller.is_bluetooth,
                 path: previous_controller.path.clone(),
                 last_read_failed: true,
             });
@@ -89,19 +89,19 @@ pub fn poll_controllers(
             continue;
         }
 
-        let (battery_percent, is_charging, is_fully_charged) =
+        let battery_and_charging_result =
             parse_battery_and_charging(&ParseBatteryAndChargingArgs {
                 buffer: &buffer,
-                connection_type: parsed_info.connection_type,
+                is_bluetooth: parsed_info.is_bluetooth,
                 product_id: parsed_info.product_id,
             });
 
         status_list.push(ControllerStatus {
             name: parsed_info.name.clone(),
-            battery_percent,
-            is_charging,
-            is_fully_charged,
-            connection_type: parsed_info.connection_type,
+            battery_percent: battery_and_charging_result.battery_percent,
+            is_charging: battery_and_charging_result.is_charging,
+            is_fully_charged: battery_and_charging_result.is_fully_charged,
+            is_bluetooth: parsed_info.is_bluetooth,
             path: parsed_info.path,
             last_read_failed: false,
         });

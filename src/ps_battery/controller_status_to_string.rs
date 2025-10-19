@@ -4,12 +4,20 @@ pub fn controller_status_to_string(status: &ControllerStatus) -> String {
     format!(
         "{} [{}] — {}% — {}",
         status.name,
-        status.connection_type,
-        status.battery_percent,
-        if status.is_charging {
-            "Charging"
-        } else if status.is_fully_charged {
+        if status.is_bluetooth {
+            "Bluetooth"
+        } else {
+            "USB"
+        },
+        if status.is_fully_charged {
+            100
+        } else {
+            status.battery_percent
+        },
+        if status.is_fully_charged {
             "Fully charged"
+        } else if status.is_charging {
+            "Charging"
         } else {
             "Not Charging"
         }
