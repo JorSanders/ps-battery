@@ -28,23 +28,23 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
         println!(" -> path='{}'", parsed_info.path);
 
         let hid_device = match open_device(&OpenDeviceArgs {
-            hid_api: &hid_api,
+            hid_api,
             info: &controller_info,
         }) {
             Some(d) => d,
             None => continue,
         };
 
-        let mut read_args = ReadControllerInputReportArgs {
+        let read_args = ReadControllerInputReportArgs {
             hid_device: &hid_device,
             device_name: &parsed_info.name,
             is_bluetooth: parsed_info.is_bluetooth,
             product_id: parsed_info.product_id,
         };
 
-        let buffer = read_controller_input_report(&mut read_args);
+        let buffer = read_controller_input_report(&read_args);
 
-        if buffer.len() == 0 || buffer[0] == 0b0 {
+        if buffer.is_empty() || buffer[0] == 0b0 {
             let previous_controller = if let Some(c) = previous_controllers
                 .iter()
                 .find(|c| c.path == parsed_info.path)
@@ -96,7 +96,7 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
         println!();
     }
 
-    if status_list.len() == 0 {
+    if status_list.is_empty() {
         println!();
         println!(" -> No controllers connected");
         println!();

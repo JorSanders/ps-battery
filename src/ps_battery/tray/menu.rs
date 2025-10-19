@@ -36,7 +36,7 @@ pub extern "system" fn window_proc(
                 }
             }
 
-            if controllers.len() == 0 {
+            if controllers.is_empty() {
                 let res = unsafe {
                     let no_controllers_text: Vec<u16> = "No controllers connected"
                         .encode_utf16()
