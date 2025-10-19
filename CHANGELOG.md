@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.16.2](https://github.com/JorSanders/ps-battery/compare/v1.16.1...v1.16.2) (2025-10-19)
+
+
+### Bug Fixes
+
+* clippy warnings ([ed8f2c4](https://github.com/JorSanders/ps-battery/commit/ed8f2c47491701f50f6fa4aa807ca456d9791ff9))
+* only send alert when not charging and over bluetooth ([7d77ee3](https://github.com/JorSanders/ps-battery/commit/7d77ee318a2f9de36baebeb5c326091f3b96cdb0))
+* use only required features ([1ff8ccc](https://github.com/JorSanders/ps-battery/commit/1ff8ccc16c9362a153d079ed714ac70603ec853c))
+
 ## [1.16.1](https://github.com/JorSanders/ps-battery/compare/v1.16.0...v1.16.1) (2025-10-19)
 
 
