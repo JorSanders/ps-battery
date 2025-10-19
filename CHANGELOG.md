@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.0](https://github.com/JorSanders/ps-battery/compare/v1.15.0...v1.16.0) (2025-10-19)
+
+
+### Features
+
+* pollin is in a second thread now ([3c021dc](https://github.com/JorSanders/ps-battery/commit/3c021dcd8867c6f277dba9d29daa88e0ce97e0eb))
+* using a local thread ([5e6e2ac](https://github.com/JorSanders/ps-battery/commit/5e6e2ac59e0920d6841a2c01de50b0c4520bad90))
+
 ## [1.15.0](https://github.com/JorSanders/ps-battery/compare/v1.14.0...v1.15.0) (2025-10-19)
 
 
