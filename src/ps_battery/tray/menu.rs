@@ -143,5 +143,7 @@ pub extern "system" fn window_proc(
         }
     }
 
+    println!(" -> window proc");
+
     unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) }
 }

@@ -12,7 +12,7 @@ use crate::ps_battery::read_controller_input_report::{
 use crate::ps_battery::tray::show_balloon::BalloonIcon;
 use crate::ps_battery::tray::{ShowBalloonArgs, show_balloon};
 use hidapi::HidApi;
-use std::time::{Duration, Instant};
+use tokio::time::{Duration, Instant};
 use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
 pub const ALERT_INTERVAL: Duration = Duration::from_secs(300);
