@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.1](https://github.com/JorSanders/ps-battery/compare/v1.16.0...v1.16.1) (2025-10-19)
+
+
+### Bug Fixes
+
+* poll every minute ([0d4965c](https://github.com/JorSanders/ps-battery/commit/0d4965c206d08d94a3fff69df7b1e4da0f6ba303))
+
 ## [1.16.0](https://github.com/JorSanders/ps-battery/compare/v1.15.0...v1.16.0) (2025-10-19)
 
 
