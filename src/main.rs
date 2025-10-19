@@ -12,7 +12,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 };
 
 const ALERT_INTERVAL: Duration = Duration::from_secs(300);
-const POLL_INTERVAL: Duration = Duration::from_secs(10);
+const POLL_INTERVAL: Duration = Duration::from_secs(60);
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 2)]
 async fn main() {
