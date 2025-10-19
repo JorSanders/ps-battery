@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.0](https://github.com/JorSanders/ps-battery/compare/v1.14.0...v1.15.0) (2025-10-19)
+
+
+### Features
+
+* clean up the fully charged state ([b224a40](https://github.com/JorSanders/ps-battery/commit/b224a40041073fe0bc7065260babb9b81b05a5e2))
+* detect fully charged state ([508b5ef](https://github.com/JorSanders/ps-battery/commit/508b5ef447e4640f2538d2540f187a1e4c38c005))
+
 ## [1.14.0](https://github.com/JorSanders/ps-battery/compare/v1.13.1...v1.14.0) (2025-10-18)
 
 
