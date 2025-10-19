@@ -23,7 +23,7 @@ pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
 
     let devices: Vec<DeviceInfo> = hid_api.device_list().cloned().collect();
 
-    println!(" -> hid device count count {}", devices.len());
+    println!(" -> hid device count {}", devices.len());
 
     let controllers: Vec<DeviceInfo> = devices
         .into_iter()

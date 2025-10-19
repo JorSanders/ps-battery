@@ -1,29 +1,15 @@
-use crate::ps_battery::controller_status_to_string::controller_status_to_string;
 use crate::ps_battery::controller_store::{ControllerStatus, get_controllers, set_controllers};
 use crate::ps_battery::get_controller_info::get_controller_info;
 use crate::ps_battery::get_playstation_controllers::get_playstation_controllers;
 use crate::ps_battery::parse_battery_and_charging::{
     ParseBatteryAndChargingArgs, parse_battery_and_charging,
 };
-use crate::ps_battery::play_sound::{AlertSound, PlaySoundArgs, play_sound};
 use crate::ps_battery::read_controller_input_report::{
     OpenDeviceArgs, ReadControllerInputReportArgs, open_device, read_controller_input_report,
 };
-use crate::ps_battery::tray::show_balloon::BalloonIcon;
-use crate::ps_battery::tray::{ShowBalloonArgs, show_balloon};
 use hidapi::HidApi;
-use tokio::time::{Duration, Instant};
-use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
-pub const ALERT_INTERVAL: Duration = Duration::from_secs(300);
-
-pub fn poll_controllers(
-    hid_api: &mut HidApi,
-    tray_icon: &mut NOTIFYICONDATAW,
-    last_alert_sent: &mut Instant,
-) {
-    let now = Instant::now();
-
+pub fn poll_controllers(hid_api: &mut HidApi) {
     let controllers = get_playstation_controllers(hid_api);
 
     let mut status_list: Vec<ControllerStatus> = Vec::new();
@@ -151,42 +137,6 @@ pub fn poll_controllers(
     //     is_charging: false,
     //     connection_type: crate::ps_battery::get_controller_info::ConnectionType::Bluetooth,
     // });
-
-    if now.duration_since(*last_alert_sent) >= ALERT_INTERVAL {
-        let mut alert_sent = false;
-        for controller_status in &status_list {
-            if controller_status.battery_percent > 30 {
-                continue;
-            }
-            alert_sent = true;
-
-            *last_alert_sent = now;
-
-            let (sound, icon) = if controller_status.battery_percent <= 10 {
-                (AlertSound::Critical, BalloonIcon::Error)
-            } else if controller_status.battery_percent <= 20 {
-                (AlertSound::Exclamation, BalloonIcon::Warning)
-            } else {
-                (AlertSound::Notify, BalloonIcon::Info)
-            };
-
-            play_sound(&PlaySoundArgs { alert: sound });
-
-            let mut show_args = ShowBalloonArgs {
-                notify: tray_icon,
-                message: &controller_status_to_string(controller_status),
-                title: &format!(
-                    "PS controller {}% battery",
-                    controller_status.battery_percent
-                ),
-                icon,
-            };
-            show_balloon(&mut show_args);
-        }
-        if !alert_sent {
-            println!(" -> No alerts sent");
-        }
-    }
 
     set_controllers(status_list);
 }
