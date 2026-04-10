@@ -48,14 +48,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Build release and debug binaries
-        run: |
-          cargo build --release
-          cargo build
-
-      - name: Rename debug binary
-        shell: pwsh
-        run: Copy-Item target/debug/ps-battery.exe target/debug/ps-battery-debug.exe
+      - name: Build release binary
+        run: cargo build --release
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
@@ -77,6 +71,5 @@ jobs:
           files: |
             target/release/ps-battery.exe
             target/release/ps-battery.exe.bundle
-            target/debug/ps-battery-debug.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
