@@ -1,6 +1,7 @@
 use std::sync::{OnceLock, RwLock};
 
 #[derive(Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct ControllerStatus {
     pub name: String,
     pub battery_percent: u8,
@@ -13,19 +14,10 @@ pub struct ControllerStatus {
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 
 pub fn set_controllers(status: Vec<ControllerStatus>) {
-    if CONTROLLERS.get().is_none() {
-        if CONTROLLERS.set(RwLock::new(status)).is_err() {
-            eprintln!(" !! Failed to initialize controller store");
-        }
-        return;
-    }
-
-    let mut lock = CONTROLLERS
-        .get()
-        .expect("controller store missing")
+    *CONTROLLERS
+        .get_or_init(|| RwLock::new(Vec::new()))
         .write()
-        .expect("controller store poisoned");
-    *lock = status;
+        .expect("controller store poisoned") = status;
 }
 
 pub fn get_controllers() -> Vec<ControllerStatus> {
