@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.17.0](https://github.com/JorSanders/ps-battery/compare/v1.16.2...v1.17.0) (2026-04-10)
+
+
+### Features
+
+* add "Scan for controllers now" and "Open log" tray menu items ([25f3a32](https://github.com/JorSanders/ps-battery/commit/25f3a32e19b41ffd39b3341510f3fa6620154405))
+* add file-based logger with log_info!/log_err! macros ([064e762](https://github.com/JorSanders/ps-battery/commit/064e762065c67ad568ab160efa9ccf249f689ac3))
+* replace tokio with std threads for polling ([e28de40](https://github.com/JorSanders/ps-battery/commit/e28de407fbe6c048c31ed6845d12424b8525f715))
+
+
+### Bug Fixes
+
+* raise alert threshold to 30% and flatten balloon/sound call sites ([c59c59b](https://github.com/JorSanders/ps-battery/commit/c59c59b860c4bba4148f6dd219db2acec496da40))
+* return Option from parse_battery_and_charging; flatten HID signatures ([13f86cd](https://github.com/JorSanders/ps-battery/commit/13f86cd444b4f56bdbdc96f3c0332c17c6a8bbc6))
+* use Windows system sound aliases instead of hardcoded .wav paths ([b86a32f](https://github.com/JorSanders/ps-battery/commit/b86a32ff4e25999526bcef6b6c06796932ab2ae9))
+* Win32 raw pointer safety, autostart error handling, and tray cleanup ([f20a895](https://github.com/JorSanders/ps-battery/commit/f20a89582d503b666c530a2947cd07aad9b7e83d))
+
 ## [1.16.2](https://github.com/JorSanders/ps-battery/compare/v1.16.1...v1.16.2) (2025-10-19)
 
 
