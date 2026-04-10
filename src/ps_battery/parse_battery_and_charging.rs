@@ -1,3 +1,4 @@
+use crate::{log_err, log_info};
 use crate::ps_battery::get_playstation_controllers::{
     DUALSENSE_EDGE_PRODUCT_ID, DUALSENSE_PRODUCT_ID, DUALSHOCK_GEN_1_PRODUCT_ID,
     DUALSHOCK_GEN_2_PRODUCT_ID,
@@ -12,22 +13,20 @@ const MASK_HIGH_NIBBLE: u8 = 0b1111_0000;
 const MASK_CHARGING_FLAG: u8 = 0b0000_0001;
 const MASK_FULLY_CHARGED: u8 = 0b0000_0010;
 
-pub struct ParseBatteryAndChargingArgs<'a> {
-    pub buffer: &'a [u8],
-    pub is_bluetooth: bool,
-    pub product_id: u16,
-}
-
 pub struct BatteryAndChargingResult {
     pub battery_percent: u8,
     pub is_charging: bool,
     pub is_fully_charged: bool,
 }
 
-pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> BatteryAndChargingResult {
-    let battery_byte_index = match args.product_id {
+pub fn parse_battery_and_charging(
+    buffer: &[u8],
+    is_bluetooth: bool,
+    product_id: u16,
+) -> Option<BatteryAndChargingResult> {
+    let battery_byte_index = match product_id {
         DUALSENSE_PRODUCT_ID | DUALSENSE_EDGE_PRODUCT_ID => {
-            if args.is_bluetooth {
+            if is_bluetooth {
                 BLUETOOTH_BATTERY_BYTE_INDEX
             } else {
                 USB_BATTERY_BYTE_INDEX
@@ -35,26 +34,21 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> Battery
         }
         DUALSHOCK_GEN_1_PRODUCT_ID | DUALSHOCK_GEN_2_PRODUCT_ID => DUALSHOCK_BATTERY_BYTE_INDEX,
         _ => {
-            eprintln!(" !! Product_id not known");
-
-            return BatteryAndChargingResult {
-                battery_percent: u8::MAX,
-                is_charging: false,
-                is_fully_charged: false,
-            };
+            log_err!("Product_id 0x{:04X} not known", product_id);
+            return None;
         }
     };
 
-    if battery_byte_index >= args.buffer.len() {
-        eprintln!(" !! Battery index out of buffer bounds");
-        return BatteryAndChargingResult {
-            battery_percent: u8::MAX,
-            is_charging: false,
-            is_fully_charged: false,
-        };
+    if battery_byte_index >= buffer.len() {
+        log_err!(
+            "Battery index {} out of buffer bounds (len={})",
+            battery_byte_index,
+            buffer.len()
+        );
+        return None;
     }
 
-    let battery_byte = args.buffer[battery_byte_index];
+    let battery_byte = buffer[battery_byte_index];
     let battery_level_nibble = battery_byte & MASK_LOW_NIBBLE;
     let battery_state_nibble = (battery_byte & MASK_HIGH_NIBBLE) >> 4;
 
@@ -67,8 +61,8 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> Battery
         battery_level_nibble * 10
     };
 
-    println!(
-        " -> battery_byte_index={}, battery_byte=0b{:08b}, battery_level_nibble=0b{:04b}, battery_state_nibble=0b{:04b}, battery_raw={}, battery_percent={}, is_charging={}, is_fully_charged={}",
+    log_info!(
+        "battery_byte_index={}, battery_byte=0b{:08b}, battery_level_nibble=0b{:04b}, battery_state_nibble=0b{:04b}, battery_raw={}, battery_percent={}, is_charging={}, is_fully_charged={}",
         battery_byte_index,
         battery_byte,
         battery_level_nibble,
@@ -79,9 +73,9 @@ pub fn parse_battery_and_charging(args: &ParseBatteryAndChargingArgs) -> Battery
         is_fully_charged
     );
 
-    BatteryAndChargingResult {
+    Some(BatteryAndChargingResult {
         battery_percent,
         is_charging,
         is_fully_charged,
-    }
+    })
 }
