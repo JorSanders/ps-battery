@@ -1,18 +1,30 @@
 on:
   push:
     branches: [main]
-
-permissions:
-  contents: write
-  id-token: write
-  issues: write
-  pull-requests: write
+  pull_request:
+    branches: [main]
 
 name: release
 
+# Minimal default — only read access unless a job overrides.
+permissions:
+  contents: read
+
 jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check
+
   release-please:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -29,20 +41,26 @@ jobs:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write  # required by Cosign OIDC signing only
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Build release binary
-        run: cargo build --release
-
-      - name: Install latest Cosign
-        shell: pwsh
+      - name: Build release and debug binaries
         run: |
-          curl -L https://github.com/sigstore/cosign/releases/latest/download/cosign-windows-amd64.exe -o cosign.exe
-          mkdir -p $env:USERPROFILE\bin
-          move cosign.exe $env:USERPROFILE\bin\cosign.exe
-          echo "$env:USERPROFILE\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          cargo build --release
+          cargo build
+
+      - name: Rename debug binary
+        shell: pwsh
+        run: Copy-Item target/debug/ps-battery.exe target/debug/ps-battery-debug.exe
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: v2.4.1  # pin — update when upgrading
 
       - name: Sign binary with Sigstore
         shell: pwsh
@@ -52,29 +70,13 @@ jobs:
             --yes `
             --bundle target/release/ps-battery.exe.bundle
 
-      - name: Upload .exe and bundle to release
+      - name: Upload assets to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: |
             target/release/ps-battery.exe
             target/release/ps-battery.exe.bundle
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build debug binary
-        run: cargo build
-
-      - name: Rename debug binary
-        shell: pwsh
-        run: |
-          Copy-Item target/debug/ps-battery.exe target/debug/ps-battery-debug.exe
-
-      - name: Upload debug binary to release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: |
             target/debug/ps-battery-debug.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
