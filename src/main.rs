@@ -1,33 +1,33 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod ps_battery;
-use crate::ps_battery::poll_controllers::poll_controllers;
+use crate::ps_battery::poll_controllers::{poll_controllers, wait_for_next_poll};
 use crate::ps_battery::send_controller_alerts;
 use crate::ps_battery::tray::{add_tray_icon, create_hidden_window};
 use crate::send_controller_alerts::send_controller_alerts;
 use hidapi::HidApi;
-use tokio::time::{Duration, Instant, sleep};
+use std::time::{Duration, Instant};
 use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, MSG, PM_REMOVE, PeekMessageW, TranslateMessage, WM_QUIT,
 };
 
 const ALERT_INTERVAL: Duration = Duration::from_secs(300);
-const POLL_INTERVAL: Duration = Duration::from_secs(60);
 
-#[tokio::main(flavor = "multi_thread", worker_threads = 2)]
-async fn main() {
+fn main() {
+    ps_battery::logger::init();
+
     let hidden_window = create_hidden_window();
     let mut tray_icon = add_tray_icon(hidden_window);
 
-    tokio::spawn(async move {
-        println!(" -> initializing hidapi");
+    std::thread::spawn(move || {
+        log_info!("initializing hidapi");
         let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
-        println!(" -> initialized hidapi");
-        println!(" -> hid device count {}", hid_api.device_list().count());
+        log_info!("initialized hidapi");
+        log_info!("hid device count {}", hid_api.device_list().count());
 
         loop {
             poll_controllers(&mut hid_api);
-            sleep(POLL_INTERVAL).await;
+            wait_for_next_poll();
         }
     });
 
@@ -37,12 +37,12 @@ async fn main() {
 
     loop {
         let mut msg = MSG::default();
-        while unsafe { PeekMessageW(&mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
+        while unsafe { PeekMessageW(&raw mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
             if msg.message == WM_QUIT {
                 return;
             }
-            let _translated = unsafe { TranslateMessage(&msg) };
-            unsafe { DispatchMessageW(&msg) };
+            let _translated = unsafe { TranslateMessage(&raw const msg) };
+            unsafe { DispatchMessageW(&raw const msg) };
         }
 
         if last_alert.elapsed() >= ALERT_INTERVAL {
@@ -52,6 +52,6 @@ async fn main() {
             }
         }
 
-        sleep(Duration::from_millis(100)).await;
+        std::thread::sleep(Duration::from_millis(100));
     }
 }
