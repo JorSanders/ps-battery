@@ -1,33 +1,26 @@
-use windows::Win32::Media::Audio::*;
-use windows::core::PCWSTR;
+use crate::{log_err, log_info};
+use windows::Win32::Media::Audio::{PlaySoundW, SND_ALIAS, SND_ASYNC};
+use windows::core::w;
 
-const SOUND_FILE_NOTIFY: &str = r"C:\Windows\Media\Windows Notify System Generic.wav";
-const SOUND_FILE_EXCLAMATION: &str = r"C:\Windows\Media\Windows Exclamation.wav";
-const SOUND_FILE_CRITICAL: &str = r"C:\Windows\Media\Windows Critical Stop.wav";
-
+#[derive(Clone, Copy)]
 pub enum AlertSound {
     Notify,
     Exclamation,
     Critical,
 }
 
-pub struct PlaySoundArgs {
-    pub alert: AlertSound,
-}
-
-pub fn play_sound(args: &PlaySoundArgs) {
-    let file_path = match args.alert {
-        AlertSound::Notify => SOUND_FILE_NOTIFY,
-        AlertSound::Exclamation => SOUND_FILE_EXCLAMATION,
-        AlertSound::Critical => SOUND_FILE_CRITICAL,
+pub fn play_sound(alert: AlertSound) {
+    let (alias, name) = match alert {
+        AlertSound::Notify => (w!("SystemNotification"), "SystemNotification"),
+        AlertSound::Exclamation => (w!("SystemExclamation"), "SystemExclamation"),
+        AlertSound::Critical => (w!("SystemHand"), "SystemHand"),
     };
 
-    let wide: Vec<u16> = file_path.encode_utf16().chain(Some(0)).collect();
-    let result = unsafe { PlaySoundW(PCWSTR(wide.as_ptr()), None, SND_FILENAME | SND_ASYNC) };
+    let result = unsafe { PlaySoundW(alias, None, SND_ALIAS | SND_ASYNC) };
 
     if result.as_bool() {
-        println!(" -> Sound played. Path: '{}'", file_path)
+        log_info!("Sound played. Alias: '{}'", name);
     } else {
-        eprintln!(" !! Failed to play sound '{}'", file_path);
+        log_err!("Failed to play sound alias '{}'", name);
     }
 }
