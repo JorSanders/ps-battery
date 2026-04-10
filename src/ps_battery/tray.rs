@@ -1,3 +1,5 @@
+use crate::log_err;
+
 pub mod autostart;
 pub mod create_hidden_window;
 pub mod menu;
@@ -10,7 +12,7 @@ use windows::Win32::UI::Shell::{
 use windows::Win32::UI::WindowsAndMessaging::{IDI_APPLICATION, LoadIconW};
 
 pub const WM_TRAYICON: u32 = 0x8000 + 1;
-const TRAY_ICON_ID: u32 = 100;
+pub const TRAY_ICON_ID: u32 = 100;
 const TRAY_TIP_TEXT: &str = concat!("PS Battery: v", env!("CARGO_PKG_VERSION"));
 
 pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
@@ -20,6 +22,7 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
 
     let h_icon = unsafe { LoadIconW(None, IDI_APPLICATION).expect("load icon failed") };
     let notify = NOTIFYICONDATAW {
+        #[allow(clippy::cast_possible_truncation)]
         cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
         hWnd: hwnd,
         uID: TRAY_ICON_ID,
@@ -31,13 +34,14 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
         ..Default::default()
     };
 
-    let res = unsafe { Shell_NotifyIconW(NIM_ADD, &notify) };
+    let res = unsafe { Shell_NotifyIconW(NIM_ADD, &raw const notify) };
     if !res.as_bool() {
-        eprintln!(" !! Shell_NotifyIconW failed");
+        log_err!("Shell_NotifyIconW NIM_ADD failed — tray icon could not be created");
+        std::process::exit(1);
     }
 
     notify
 }
 
 pub use create_hidden_window::create_hidden_window;
-pub use show_balloon::{ShowBalloonArgs, show_balloon};
+pub use show_balloon::{BalloonIcon, show_balloon};
