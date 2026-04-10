@@ -1,47 +1,50 @@
+use crate::{log_err, log_info};
 use windows::Win32::UI::Shell::{
     NIF_INFO, NIIF_ERROR, NIIF_INFO, NIIF_WARNING, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW,
 };
 
+#[derive(Clone, Copy)]
 pub enum BalloonIcon {
     Info,
     Warning,
     Error,
 }
 
-pub struct ShowBalloonArgs<'a> {
-    pub notify: &'a mut NOTIFYICONDATAW,
-    pub title: &'a str,
-    pub message: &'a str,
-    pub icon: BalloonIcon,
-}
+pub fn show_balloon(
+    notify: &mut NOTIFYICONDATAW,
+    title: &str,
+    message: &str,
+    icon: BalloonIcon,
+) {
+    let title_utf16: Vec<u16> = title.encode_utf16().chain(Some(0)).collect();
+    let msg_utf16: Vec<u16> = message.encode_utf16().chain(Some(0)).collect();
 
-pub fn show_balloon(args: &mut ShowBalloonArgs) {
-    let title_utf16: Vec<u16> = args.title.encode_utf16().chain(Some(0)).collect();
-    let msg_utf16: Vec<u16> = args.message.encode_utf16().chain(Some(0)).collect();
+    notify.uFlags |= NIF_INFO;
 
-    args.notify.uFlags |= NIF_INFO;
+    let msg_len = msg_utf16.len().min(notify.szInfo.len());
+    notify.szInfo[..msg_len].copy_from_slice(&msg_utf16[..msg_len]);
+    if msg_len == notify.szInfo.len() {
+        notify.szInfo[msg_len - 1] = 0;
+    }
 
-    let msg_len = msg_utf16.len().min(args.notify.szInfo.len());
-    args.notify.szInfo[..msg_len].copy_from_slice(&msg_utf16[..msg_len]);
+    let title_len = title_utf16.len().min(notify.szInfoTitle.len());
+    notify.szInfoTitle[..title_len].copy_from_slice(&title_utf16[..title_len]);
+    if title_len == notify.szInfoTitle.len() {
+        notify.szInfoTitle[title_len - 1] = 0;
+    }
 
-    let title_len = title_utf16.len().min(args.notify.szInfoTitle.len());
-    args.notify.szInfoTitle[..title_len].copy_from_slice(&title_utf16[..title_len]);
-
-    args.notify.dwInfoFlags = match args.icon {
+    notify.dwInfoFlags = match icon {
         BalloonIcon::Info => NIIF_INFO,
         BalloonIcon::Warning => NIIF_WARNING,
         BalloonIcon::Error => NIIF_ERROR,
     };
 
     unsafe {
-        let res = Shell_NotifyIconW(NIM_MODIFY, args.notify);
+        let res = Shell_NotifyIconW(NIM_MODIFY, notify);
         if res.as_bool() {
-            println!(
-                " -> Balloon sent. Title: '{}' Message: '{}",
-                args.title, args.message
-            );
+            log_info!("Balloon sent. Title: '{}' Message: '{}'", title, message);
         } else {
-            eprintln!(" !! Shell_NotifyIconW failed");
+            log_err!("Shell_NotifyIconW NIM_MODIFY failed");
         }
     }
 }

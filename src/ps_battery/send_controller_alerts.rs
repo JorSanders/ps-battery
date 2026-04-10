@@ -3,8 +3,8 @@ use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 use crate::ps_battery::{
     controller_status_to_string::controller_status_to_string,
     controller_store::get_controllers,
-    play_sound::{AlertSound, PlaySoundArgs, play_sound},
-    tray::{ShowBalloonArgs, show_balloon, show_balloon::BalloonIcon},
+    play_sound::{AlertSound, play_sound},
+    tray::{BalloonIcon, show_balloon},
 };
 
 pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
@@ -12,7 +12,7 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
 
     let mut alerts_sent: u8 = 0;
     for controller_status in controllers {
-        if controller_status.battery_percent > 3
+        if controller_status.battery_percent > 30
             || !controller_status.is_bluetooth
             || controller_status.is_fully_charged
             || controller_status.is_charging
@@ -29,18 +29,14 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
             (AlertSound::Notify, BalloonIcon::Info)
         };
 
-        play_sound(&PlaySoundArgs { alert: sound });
+        play_sound(sound);
 
-        let mut show_args = ShowBalloonArgs {
-            notify: tray_icon,
-            message: &controller_status_to_string(&controller_status),
-            title: &format!(
-                "PS controller {}% battery",
-                controller_status.battery_percent
-            ),
+        show_balloon(
+            tray_icon,
+            &format!("PS controller {}% battery", controller_status.battery_percent),
+            &controller_status_to_string(&controller_status),
             icon,
-        };
-        show_balloon(&mut show_args);
+        );
     }
 
     alerts_sent
