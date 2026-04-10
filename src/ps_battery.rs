@@ -1,7 +1,7 @@
 pub mod controller_status_to_string;
 pub mod controller_store;
-pub mod get_controller_info;
 pub mod get_playstation_controllers;
+pub mod logger;
 pub mod parse_battery_and_charging;
 pub mod play_sound;
 pub mod poll_controllers;

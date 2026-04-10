@@ -1,3 +1,4 @@
+use crate::{log_err, log_info};
 use hidapi::{DeviceInfo, HidApi};
 
 const SONY_VENDOR_ID: u16 = 0x054C;
@@ -15,22 +16,21 @@ const SONY_PRODUCT_IDS: [u16; 4] = [
 ];
 
 pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
-    println!(" -> Refreshing hidapi devices");
+    log_info!("Refreshing hidapi devices");
     if let Err(err) = hid_api.refresh_devices() {
-        eprintln!(" !! Failed to refresh HID devices: {err}");
+        log_err!("Failed to refresh HID devices: {err}");
     }
-    println!(" -> Refreshed hidapi devices");
+    log_info!("Refreshed hidapi devices");
 
     let devices: Vec<DeviceInfo> = hid_api.device_list().cloned().collect();
-
-    println!(" -> hid device count {}", devices.len());
+    log_info!("hid device count {}", devices.len());
 
     let controllers: Vec<DeviceInfo> = devices
         .into_iter()
         .filter(|d| d.vendor_id() == SONY_VENDOR_ID && SONY_PRODUCT_IDS.contains(&d.product_id()))
         .collect();
 
-    println!(" -> controller count {}", controllers.len());
+    log_info!("controller count {}", controllers.len());
 
     controllers
 }

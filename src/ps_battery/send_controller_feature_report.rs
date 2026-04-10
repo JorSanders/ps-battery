@@ -1,3 +1,4 @@
+use crate::{log_err, log_info};
 use hidapi::HidDevice;
 
 use crate::ps_battery::get_playstation_controllers::{
@@ -23,14 +24,14 @@ pub fn send_controller_feature_report(hid_device: &HidDevice, product_id: u16) {
 
     match hid_device.get_feature_report(&mut report_buffer) {
         Ok(n) => {
-            println!(
-                "-> send_controller_feature_report response {} bytes: {:02X?}",
+            log_info!(
+                "send_controller_feature_report response {} bytes: {:02X?}",
                 n,
                 &report_buffer[..n]
             );
         }
         Err(err) => {
-            eprintln!(" !! Failed to read feature report: '{}'", err);
+            log_err!("Failed to read feature report: {err}");
         }
     }
 }
