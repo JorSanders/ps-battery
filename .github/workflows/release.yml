@@ -22,7 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - run: cargo check
+      - run: cargo clippy -- -D warnings
 
   release-please:
     runs-on: ubuntu-latest
