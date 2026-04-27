@@ -26,7 +26,7 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
         }
         alerts_sent += 1;
 
-        let (sound, icon) = if controller_status.battery_percent <= 0 {
+        let (sound, icon) = if controller_status.battery_percent == 0 {
             (AlertSound::Critical, BalloonIcon::Error)
         } else if controller_status.battery_percent <= 10 {
             (AlertSound::Exclamation, BalloonIcon::Warning)
