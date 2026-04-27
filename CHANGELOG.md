@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.18.0](https://github.com/JorSanders/ps-battery/compare/v1.17.0...v1.18.0) (2026-04-27)
+
+
+### Features
+
+* Fire alerts from 20% and below instead of 30% ([36a6216](https://github.com/JorSanders/ps-battery/commit/36a6216cddd3b57931e7747b900418a04fedc054))
+* only play sound if dnd is on ([6a615ac](https://github.com/JorSanders/ps-battery/commit/6a615ac22fb24585a18eb727a8d626e08dc81240))
+
+
+### Bug Fixes
+
+* Clippy warning on &lt;= 0 check ([fd9255d](https://github.com/JorSanders/ps-battery/commit/fd9255df6c5b74c060a8185f22d799550f5317b7))
+
 ## [1.17.0](https://github.com/JorSanders/ps-battery/compare/v1.16.2...v1.17.0) (2026-04-10)
 
 
