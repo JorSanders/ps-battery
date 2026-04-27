@@ -1,9 +1,9 @@
 on:
   push:
-    branches:
-      - main
-      - 'release-please--**'
+    branches: [main]
   pull_request:
+    branches: [main]
+  pull_request_target:
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -21,6 +21,7 @@ permissions:
 jobs:
   check:
     runs-on: windows-latest
+    if: github.event_name != 'pull_request_target' || contains(github.actor, '[bot]')
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -46,7 +47,7 @@ jobs:
           release-type: rust
           manifest-file: Cargo.toml
           config-file: .release-please-config.json
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
   upload-assets:
     needs: release-please
