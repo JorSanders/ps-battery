@@ -30,23 +30,24 @@ pub fn get_log_path() -> Option<&'static str> {
 }
 
 pub fn write_log(level: &str, msg: &str) {
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
     #[cfg(debug_assertions)]
     {
         if level == "ERR " {
-            eprintln!(" !! {msg}");
+            eprintln!("[{secs}] [{level}] {msg}");
         } else {
-            println!(" -> {msg}");
+            println!("[{secs}] [{level}] {msg}");
         }
     }
 
-    if let Some(file) = LOG_FILE.get() {
-        let secs = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-        if let Ok(mut f) = file.lock() {
-            let _ = writeln!(f, "[{secs}] [{level}] {msg}");
-        }
+    if let Some(file) = LOG_FILE.get()
+        && let Ok(mut f) = file.lock()
+    {
+        let _ = writeln!(f, "[{secs}] [{level}] {msg}");
     }
 }
 
