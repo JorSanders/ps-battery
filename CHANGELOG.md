@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.19.0](https://github.com/JorSanders/ps-battery/compare/v1.18.0...v1.19.0) (2026-04-27)
+
+
+### Features
+
+* embed FileDescription in PE resources for friendly notification name ([3f862d9](https://github.com/JorSanders/ps-battery/commit/3f862d95795d240270c2ba8d180080cf0cc697da))
+
+
+### Bug Fixes
+
+* use consistent log format for println and log file ([3c42917](https://github.com/JorSanders/ps-battery/commit/3c42917bebed2f139ade79b2ef89992d2b4bd61c))
+
 ## [1.18.0](https://github.com/JorSanders/ps-battery/compare/v1.17.0...v1.18.0) (2026-04-27)
 
 
