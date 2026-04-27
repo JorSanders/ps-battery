@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.1](https://github.com/JorSanders/ps-battery/compare/v1.18.0...v1.18.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* use consistent log format for println and log file ([3c42917](https://github.com/JorSanders/ps-battery/commit/3c42917bebed2f139ade79b2ef89992d2b4bd61c))
+
 ## [1.18.0](https://github.com/JorSanders/ps-battery/compare/v1.17.0...v1.18.0) (2026-04-27)
 
 
