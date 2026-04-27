@@ -1,14 +1,19 @@
 use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
-use crate::ps_battery::{
-    controller_status_to_string::controller_status_to_string,
-    controller_store::get_controllers,
-    play_sound::{AlertSound, play_sound},
-    tray::{BalloonIcon, show_balloon},
+use crate::{
+    log_info,
+    ps_battery::{
+        controller_status_to_string::controller_status_to_string,
+        controller_store::get_controllers,
+        is_dnd_active::is_dnd_active,
+        play_sound::{AlertSound, play_sound},
+        tray::{BalloonIcon, show_balloon},
+    },
 };
 
 pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
     let controllers = get_controllers();
+    let dnd = is_dnd_active();
 
     let mut alerts_sent: u8 = 0;
     for controller_status in controllers {
@@ -29,7 +34,11 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
             (AlertSound::Notify, BalloonIcon::Info)
         };
 
-        play_sound(sound);
+        log_info!("Sending alert. DND active: {}", dnd);
+
+        if dnd {
+            play_sound(sound);
+        }
 
         show_balloon(
             tray_icon,
