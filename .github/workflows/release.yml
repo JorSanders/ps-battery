@@ -3,6 +3,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  pull_request_target:
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag_name:
@@ -19,6 +21,9 @@ permissions:
 jobs:
   check:
     runs-on: windows-latest
+    # pull_request fires for human PRs; pull_request_target fires for bot PRs (e.g. release-please).
+    # Skip pull_request_target for non-bot actors to avoid running twice on human PRs.
+    if: github.event_name != 'pull_request_target' || contains(github.actor, '[bot]')
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
