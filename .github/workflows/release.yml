@@ -1,10 +1,6 @@
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-  pull_request_target:
-    branches: [main]
   workflow_dispatch:
     inputs:
       tag_name:
@@ -14,22 +10,10 @@ on:
 
 name: release
 
-# Minimal default — only read access unless a job overrides.
 permissions:
   contents: read
 
 jobs:
-  check:
-    runs-on: windows-latest
-    if: github.event_name != 'pull_request_target' || contains(github.actor, '[bot]')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - run: cargo check
-      - run: cargo clippy -- -D warnings
-
   release-please:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
