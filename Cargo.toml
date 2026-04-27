@@ -3,6 +3,9 @@ name = "ps-battery"
 version = "1.18.0"
 edition = "2024"
 
+[build-dependencies]
+winresource = "0.1"
+
 [dependencies]
 hidapi = "2.6.3"
 windows ={ version = "0.62", features = [
