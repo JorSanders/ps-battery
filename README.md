@@ -8,11 +8,14 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 1. Alerts you every 5 minutes if you have a low-battery controller connected via Bluetooth that is not charging.
 2. If a low-battery controller is detected, alert the user in the following way:
-   - Play a system sound:
-     - ≤10% => Critical Stop
-     - ≤20% => Exclamation
-     - ≤30% => Notification
-   - Show a Windows notification (while gaming, Windows turns on Focus Mode, so you might miss these).
+   - Show a Windows notification balloon based on remaining battery:
+     - 0% => Error balloon
+     - ≤10% => Warning balloon
+     - ≤20% => Info balloon
+   - Play a system sound when in game / fullscreen / presentation mode (to cut through the DND silence):
+     - 0% => Critical Stop
+     - ≤10% => Exclamation
+     - ≤20% => Notification
 3. Adds an application to the Windows tray. Right-clicking it shows:
    - All connected controllers, their battery %, and whether they are charging.
    - **Scan for controllers now** — trigger an immediate scan instead of waiting for the next automatic check.
