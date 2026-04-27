@@ -27,7 +27,7 @@ The release binary uses `#![windows_subsystem = "windows"]` so it runs without a
 | `ps_battery/read_controller_input_report.rs` | Opens HID device, reads input report, handles truncated Bluetooth header by sending a feature report first |
 | `ps_battery/send_controller_feature_report.rs` | Sends the feature report needed to get full Bluetooth reports from DualSense |
 | `ps_battery/controller_store.rs` | Global `RwLock<Vec<ControllerStatus>>` shared between the polling thread and the tray/alert code |
-| `ps_battery/send_controller_alerts.rs` | Fires balloon notifications + system sounds when a Bluetooth controller is ≤30 % and not charging |
+| `ps_battery/send_controller_alerts.rs` | Fires balloon notifications + system sounds when a Bluetooth controller is ≤20 % and not charging |
 | `ps_battery/play_sound.rs` | Plays Windows system-sound aliases via `PlaySoundW` with `SND_ALIAS` |
 | `ps_battery/tray/` | Tray icon, hidden Win32 window, right-click menu, autostart registry key, balloon helper |
 
@@ -54,8 +54,10 @@ Bluetooth is detected by checking whether the HID path contains the Bluetooth GU
 ## Alerts
 
 Alerts fire every 5 minutes (`ALERT_INTERVAL`) only for **Bluetooth** controllers that are not charging and not fully charged:
-- ≤10 % → Critical Stop sound + error balloon
-- ≤20 % → Exclamation sound + warning balloon
-- ≤30 % → Notification sound + info balloon
+- 0 % → Critical Stop sound + error balloon
+- 10 % → Exclamation sound + warning balloon
+- 20 % → Notification sound + info balloon
+
+A sound is only played when DND is active (game/fullscreen/presentation mode detected via `SHQueryUserNotificationState`); otherwise only the balloon is shown to avoid doubling up with Windows' own notification sound.
 
 USB-connected controllers are intentionally excluded from alerts.

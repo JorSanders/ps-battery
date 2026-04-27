@@ -17,7 +17,7 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
 
     let mut alerts_sent: u8 = 0;
     for controller_status in controllers {
-        if controller_status.battery_percent > 30
+        if controller_status.battery_percent > 20
             || !controller_status.is_bluetooth
             || controller_status.is_fully_charged
             || controller_status.is_charging
@@ -26,9 +26,9 @@ pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
         }
         alerts_sent += 1;
 
-        let (sound, icon) = if controller_status.battery_percent <= 10 {
+        let (sound, icon) = if controller_status.battery_percent <= 0 {
             (AlertSound::Critical, BalloonIcon::Error)
-        } else if controller_status.battery_percent <= 20 {
+        } else if controller_status.battery_percent <= 10 {
             (AlertSound::Exclamation, BalloonIcon::Warning)
         } else {
             (AlertSound::Notify, BalloonIcon::Info)
