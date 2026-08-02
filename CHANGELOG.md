@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.20.0](https://github.com/JorSanders/ps-battery/compare/v1.19.0...v1.20.0) (2026-08-02)
+
+
+### Features
+
+* scan for controllers and live-refresh the tray menu on open ([791b15d](https://github.com/JorSanders/ps-battery/commit/791b15dd80bc88493f632a29b52d79b824153327))
+* surface unexpected battery data in the tray menu ([b530e10](https://github.com/JorSanders/ps-battery/commit/b530e1025e486a5ebbd0211c2769ce23d965a80b))
+
+
+### Bug Fixes
+
+* avoid false negative in autostart::is_enabled for long paths ([8d3592a](https://github.com/JorSanders/ps-battery/commit/8d3592aa05414d1f51e6e6aeb79e10f79c6151dc))
+* clamp tray tooltip text to avoid a panic on overflow ([0bba74c](https://github.com/JorSanders/ps-battery/commit/0bba74cde7c8eadbdadd7f3502a03e56c6e58e48))
+* don't drop a poll request that arrives while a scan is running ([a2bdddb](https://github.com/JorSanders/ps-battery/commit/a2bdddb8c77481e24aa694f73a528733259daa90))
+* log and exit instead of panicking on hidapi/icon init failure ([65e81b9](https://github.com/JorSanders/ps-battery/commit/65e81b9e0664ecfe528e34f54f8ca75970aa8991))
+
 ## [1.19.0](https://github.com/JorSanders/ps-battery/compare/v1.18.0...v1.19.0) (2026-04-27)
 
 
