@@ -42,11 +42,14 @@ pub fn request_poll() {
 }
 
 /// Blocks until either `POLL_INTERVAL` elapses or `request_poll` is called.
+/// Returns immediately if a request already arrived before this was called
+/// (e.g. while the previous poll was still running), rather than missing it
+/// and waiting out a full `POLL_INTERVAL`.
 pub fn wait_for_next_poll() {
     let (lock, cvar) = poll_signal();
     let guard = lock.lock().expect("poll signal poisoned");
     let (mut guard, _) = cvar
-        .wait_timeout(guard, POLL_INTERVAL)
+        .wait_timeout_while(guard, POLL_INTERVAL, |requested| !*requested)
         .expect("condvar wait failed");
     *guard = false;
 }
