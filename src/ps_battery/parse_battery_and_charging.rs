@@ -17,6 +17,7 @@ pub struct BatteryAndChargingResult {
     pub battery_percent: u8,
     pub is_charging: bool,
     pub is_fully_charged: bool,
+    pub unexpected_battery_data: bool,
 }
 
 pub fn parse_battery_and_charging(
@@ -55,10 +56,19 @@ pub fn parse_battery_and_charging(
     let is_charging = (battery_state_nibble & MASK_CHARGING_FLAG) != 0;
     let is_fully_charged = (battery_state_nibble & MASK_FULLY_CHARGED) != 0;
 
+    let unexpected_battery_data = battery_level_nibble > 10;
+    if unexpected_battery_data {
+        log_err!(
+            "battery_level_nibble {} out of expected 0-10 range (battery_byte=0b{:08b})",
+            battery_level_nibble,
+            battery_byte
+        );
+    }
+
     let battery_percent = if is_fully_charged {
         100
     } else {
-        battery_level_nibble * 10
+        (battery_level_nibble * 10).min(100)
     };
 
     log_info!(
@@ -77,5 +87,6 @@ pub fn parse_battery_and_charging(
         battery_percent,
         is_charging,
         is_fully_charged,
+        unexpected_battery_data,
     })
 }

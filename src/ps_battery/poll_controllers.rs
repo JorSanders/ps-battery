@@ -112,6 +112,7 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
                 is_bluetooth: previous_controller.is_bluetooth,
                 path: previous_controller.path.clone(),
                 last_read_failed: true,
+                unexpected_battery_data: previous_controller.unexpected_battery_data,
             });
 
             continue;
@@ -132,6 +133,7 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
             is_bluetooth,
             path,
             last_read_failed: false,
+            unexpected_battery_data: battery_result.unexpected_battery_data,
         });
     }
 

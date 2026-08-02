@@ -1,7 +1,7 @@
 use crate::ps_battery::controller_store::ControllerStatus;
 
 pub fn controller_status_to_string(status: &ControllerStatus) -> String {
-    format!(
+    let mut line = format!(
         "{} [{}] — {}% — {}",
         status.name,
         if status.is_bluetooth {
@@ -21,5 +21,11 @@ pub fn controller_status_to_string(status: &ControllerStatus) -> String {
         } else {
             "Not Charging"
         }
-    )
+    );
+
+    if status.unexpected_battery_data {
+        line.push_str(" (unexpected data)");
+    }
+
+    line
 }

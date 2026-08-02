@@ -11,6 +11,7 @@ pub struct ControllerStatus {
     pub is_bluetooth: bool,
     pub path: String,
     pub last_read_failed: bool,
+    pub unexpected_battery_data: bool,
 }
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 
