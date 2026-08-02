@@ -21,7 +21,13 @@ fn main() {
 
     std::thread::spawn(move || {
         log_info!("initializing hidapi");
-        let mut hid_api = HidApi::new().expect("Failed to initialize hidapi");
+        let mut hid_api = match HidApi::new() {
+            Ok(api) => api,
+            Err(e) => {
+                log_err!("Failed to initialize hidapi: {e}");
+                std::process::exit(1);
+            }
+        };
         log_info!("initialized hidapi");
         log_info!("hid device count {}", hid_api.device_list().count());
 

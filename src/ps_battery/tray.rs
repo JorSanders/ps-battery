@@ -20,7 +20,13 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let tip_utf16 = TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>();
     sz_tip[..tip_utf16.len()].copy_from_slice(&tip_utf16);
 
-    let h_icon = unsafe { LoadIconW(None, IDI_APPLICATION).expect("load icon failed") };
+    let h_icon = match unsafe { LoadIconW(None, IDI_APPLICATION) } {
+        Ok(icon) => icon,
+        Err(e) => {
+            log_err!("LoadIconW failed: {e}");
+            std::process::exit(1);
+        }
+    };
     let notify = NOTIFYICONDATAW {
         #[allow(clippy::cast_possible_truncation)]
         cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
