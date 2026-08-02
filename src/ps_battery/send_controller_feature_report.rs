@@ -23,11 +23,11 @@ pub fn send_controller_feature_report(hid_device: &HidDevice, product_id: u16) {
     report_buffer[0] = report_feature_id;
 
     match hid_device.get_feature_report(&mut report_buffer) {
-        Ok(n) => {
+        Ok(bytes_read) => {
             log_info!(
                 "send_controller_feature_report response {} bytes: {:02X?}",
-                n,
-                &report_buffer[..n]
+                bytes_read,
+                &report_buffer[..bytes_read]
             );
         }
         Err(err) => {

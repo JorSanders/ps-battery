@@ -27,7 +27,9 @@ pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
 
     let controllers: Vec<DeviceInfo> = devices
         .into_iter()
-        .filter(|d| d.vendor_id() == SONY_VENDOR_ID && SONY_PRODUCT_IDS.contains(&d.product_id()))
+        .filter(|device| {
+            device.vendor_id() == SONY_VENDOR_ID && SONY_PRODUCT_IDS.contains(&device.product_id())
+        })
         .collect();
 
     log_info!("controller count {}", controllers.len());

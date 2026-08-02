@@ -8,11 +8,11 @@ const INITIAL_BUFFER_SIZE: usize = 100;
 
 pub fn open_device(hid_api: &HidApi, info: &DeviceInfo) -> Option<HidDevice> {
     match info.open_device(hid_api) {
-        Ok(d) => {
-            if let Err(err) = d.set_blocking_mode(false) {
+        Ok(device) => {
+            if let Err(err) = device.set_blocking_mode(false) {
                 log_err!("Failed to set non-blocking mode: {err}");
             }
-            Some(d)
+            Some(device)
         }
         Err(err) => {
             log_err!("Failed to open HID device: {err}");
@@ -30,7 +30,7 @@ pub fn read_controller_input_report(
     let mut buffer = vec![0u8; INITIAL_BUFFER_SIZE];
 
     let mut buffer_length = match hid_device.read_timeout(&mut buffer, HID_REFRESH_TIMEOUT_MS) {
-        Ok(n) => n,
+        Ok(bytes_read) => bytes_read,
         Err(e) => {
             log_err!("read_controller_input_report error: {e}");
             0
@@ -58,7 +58,7 @@ pub fn read_controller_input_report(
                     log_err!("read_controller_input_report timeout");
                     0
                 }
-                Ok(n) => n,
+                Ok(bytes_read) => bytes_read,
                 Err(e) => {
                     log_err!("read_controller_input_report error: {e}");
                     0

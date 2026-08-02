@@ -91,7 +91,7 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
 
         if buffer.is_empty() || buffer[0] == 0 {
             let Some(previous_controller) =
-                previous_controllers.iter().find(|c| c.path == path)
+                previous_controllers.iter().find(|controller| controller.path == path)
             else {
                 log_err!("Buffer is empty and device not found in previous results");
                 continue;

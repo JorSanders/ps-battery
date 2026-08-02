@@ -40,8 +40,8 @@ pub fn show_balloon(
     };
 
     unsafe {
-        let res = Shell_NotifyIconW(NIM_MODIFY, notify);
-        if res.as_bool() {
+        let result = Shell_NotifyIconW(NIM_MODIFY, notify);
+        if result.as_bool() {
             log_info!("Balloon sent. Title: '{}' Message: '{}'", title, message);
         } else {
             log_err!("Shell_NotifyIconW NIM_MODIFY failed");

@@ -21,8 +21,8 @@ pub fn create_hidden_window() -> HWND {
         ..Default::default()
     };
     unsafe {
-        let res = RegisterClassW(&raw const window_class);
-        if res == 0 {
+        let result = RegisterClassW(&raw const window_class);
+        if result == 0 {
             log_err!("RegisterClassW failed");
             std::process::exit(1);
         }
@@ -40,7 +40,7 @@ pub fn create_hidden_window() -> HWND {
             None,
             None,
         ) {
-            Ok(w) => w,
+            Ok(window) => window,
             Err(e) => {
                 log_err!("CreateWindowExW failed: {e}");
                 std::process::exit(1);

@@ -44,8 +44,8 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
         ..Default::default()
     };
 
-    let res = unsafe { Shell_NotifyIconW(NIM_ADD, &raw const notify) };
-    if !res.as_bool() {
+    let result = unsafe { Shell_NotifyIconW(NIM_ADD, &raw const notify) };
+    if !result.as_bool() {
         log_err!("Shell_NotifyIconW NIM_ADD failed — tray icon could not be created");
         std::process::exit(1);
     }

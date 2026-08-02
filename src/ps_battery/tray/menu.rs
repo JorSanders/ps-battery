@@ -75,11 +75,11 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
         ScanStatus::Completed => Some("Scan completed"),
     };
     if let Some(status_text) = status_text {
-        let res = unsafe {
+        let result = unsafe {
             let status_text: Vec<u16> = status_text.encode_utf16().chain(Some(0)).collect();
             AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(status_text.as_ptr()))
         };
-        if res.is_err() {
+        if result.is_err() {
             log_err!("AppendMenuW failed");
         }
     }
@@ -89,14 +89,14 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
     for controller in &controllers {
         let formatted = controller_status_to_string(controller);
         let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
-        let res = unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
-        if res.is_err() {
+        let result = unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
+        if result.is_err() {
             log_err!("AppendMenuW failed");
         }
     }
 
     if controllers.is_empty() {
-        let res = unsafe {
+        let result = unsafe {
             let no_controllers_text: Vec<u16> = "No controllers connected"
                 .encode_utf16()
                 .chain(Some(0))
@@ -108,13 +108,13 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
                 PCWSTR(no_controllers_text.as_ptr()),
             )
         };
-        if res.is_err() {
+        if result.is_err() {
             log_err!("AppendMenuW failed");
         }
     }
 
-    let res = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
-    if res.is_err() {
+    let result = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
+    if result.is_err() {
         log_err!("AppendMenuW separator failed");
     }
 
@@ -125,7 +125,7 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
     } else {
         MF_UNCHECKED
     };
-    let res = unsafe {
+    let result = unsafe {
         AppendMenuW(
             menu,
             MF_STRING | autostart_state,
@@ -133,12 +133,12 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
             PCWSTR(autostart_text.as_ptr()),
         )
     };
-    if res.is_err() {
+    if result.is_err() {
         log_err!("AppendMenuW autostart failed");
     }
 
-    let res = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
-    if res.is_err() {
+    let result = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
+    if result.is_err() {
         log_err!("AppendMenuW separator failed");
     }
 
@@ -147,13 +147,13 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
     } else {
         MF_STRING | MF_GRAYED
     };
-    let res = unsafe { AppendMenuW(menu, log_flags, MENU_ID_OPEN_LOG as usize, w!("Open log")) };
-    if res.is_err() {
+    let result = unsafe { AppendMenuW(menu, log_flags, MENU_ID_OPEN_LOG as usize, w!("Open log")) };
+    if result.is_err() {
         log_err!("AppendMenuW open log failed");
     }
 
-    let res = unsafe { AppendMenuW(menu, MF_STRING, MENU_ID_EXIT as usize, w!("Exit")) };
-    if res.is_err() {
+    let result = unsafe { AppendMenuW(menu, MF_STRING, MENU_ID_EXIT as usize, w!("Exit")) };
+    if result.is_err() {
         log_err!("AppendMenuW exit failed");
     }
 }
@@ -217,7 +217,7 @@ pub extern "system" fn window_proc(
             request_poll();
 
             let menu = match unsafe { CreatePopupMenu() } {
-                Ok(m) => m,
+                Ok(menu) => menu,
                 Err(e) => {
                     log_err!("CreatePopupMenu failed: {e}");
                     return unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) };
@@ -285,8 +285,8 @@ pub extern "system" fn window_proc(
 
             ACTIVE_MENU.with_borrow_mut(|active| *active = None);
 
-            let res = unsafe { DestroyMenu(menu) };
-            if res.is_err() {
+            let result = unsafe { DestroyMenu(menu) };
+            if result.is_err() {
                 log_err!("DestroyMenu failed");
             }
         }
@@ -321,14 +321,14 @@ pub extern "system" fn window_proc(
                 }
             }
             MENU_ID_AUTOSTART => {
-                let res = if autostart::is_enabled() {
+                let result = if autostart::is_enabled() {
                     log_info!("Autostart disabled");
                     autostart::disable()
                 } else {
                     log_info!("Autostart enabled");
                     autostart::enable()
                 };
-                if !res {
+                if !result {
                     log_err!("autostart toggle failed");
                 }
             }
@@ -340,8 +340,8 @@ pub extern "system" fn window_proc(
                     uID: TRAY_ICON_ID,
                     ..Default::default()
                 };
-                let res = unsafe { Shell_NotifyIconW(NIM_DELETE, &raw const notify) };
-                if !res.as_bool() {
+                let result = unsafe { Shell_NotifyIconW(NIM_DELETE, &raw const notify) };
+                if !result.as_bool() {
                     log_err!("Shell_NotifyIconW NIM_DELETE failed");
                 }
                 log_info!("Closing app via tray menu");
