@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{OnceLock, RwLock};
 
 #[derive(Clone)]
@@ -13,11 +14,16 @@ pub struct ControllerStatus {
 }
 static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
 
+/// Bumped every time `set_controllers` runs, so callers can cheaply detect
+/// whether a poll has completed since they last read the store.
+static GENERATION: AtomicU64 = AtomicU64::new(0);
+
 pub fn set_controllers(status: Vec<ControllerStatus>) {
     *CONTROLLERS
         .get_or_init(|| RwLock::new(Vec::new()))
         .write()
         .expect("controller store poisoned") = status;
+    GENERATION.fetch_add(1, Ordering::Release);
 }
 
 pub fn get_controllers() -> Vec<ControllerStatus> {
@@ -26,4 +32,8 @@ pub fn get_controllers() -> Vec<ControllerStatus> {
         .read()
         .expect("controller store poisoned")
         .clone()
+}
+
+pub fn get_generation() -> u64 {
+    GENERATION.load(Ordering::Acquire)
 }

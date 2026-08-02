@@ -4,6 +4,7 @@ use crate::ps_battery::get_playstation_controllers::get_playstation_controllers;
 use crate::ps_battery::parse_battery_and_charging::parse_battery_and_charging;
 use crate::ps_battery::read_controller_input_report::{open_device, read_controller_input_report};
 use hidapi::HidApi;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Condvar, Mutex, OnceLock};
 use std::time::Duration;
 
@@ -12,6 +13,22 @@ pub const POLL_INTERVAL: Duration = Duration::from_secs(60);
 const BLUETOOTH_GUID_SUBSTRING: &str = "00001124-0000-1000-8000-00805F9B34FB";
 
 static POLL_SIGNAL: OnceLock<(Mutex<bool>, Condvar)> = OnceLock::new();
+static IS_POLLING: AtomicBool = AtomicBool::new(false);
+
+/// Whether `poll_controllers` is currently in the middle of a scan.
+pub fn is_polling() -> bool {
+    IS_POLLING.load(Ordering::Acquire)
+}
+
+/// Clears `IS_POLLING` on drop, so it resets no matter which of
+/// `poll_controllers`'s return paths is taken.
+struct PollingGuard;
+
+impl Drop for PollingGuard {
+    fn drop(&mut self) {
+        IS_POLLING.store(false, Ordering::Release);
+    }
+}
 
 fn poll_signal() -> &'static (Mutex<bool>, Condvar) {
     POLL_SIGNAL.get_or_init(|| (Mutex::new(false), Condvar::new()))
@@ -35,6 +52,9 @@ pub fn wait_for_next_poll() {
 }
 
 pub fn poll_controllers(hid_api: &mut HidApi) {
+    IS_POLLING.store(true, Ordering::Release);
+    let _polling_guard = PollingGuard;
+
     let controllers = get_playstation_controllers(hid_api);
 
     if controllers.is_empty() {

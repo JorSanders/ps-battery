@@ -16,9 +16,9 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
      - 0% => Critical Stop
      - ≤10% => Exclamation
      - ≤20% => Notification
-3. Adds an application to the Windows tray. Right-clicking it shows:
+3. Adds an application to the Windows tray. Opening the menu triggers an immediate background scan (instead of waiting for the next automatic check), then shows:
+   - A "Scanning for controllers…" / "Scan completed" line while the scan is running and just after it finishes.
    - All connected controllers, their battery %, and whether they are charging.
-   - **Scan for controllers now** — trigger an immediate scan instead of waiting for the next automatic check.
    - **Run on startup** — run the app on Windows login (off by default).
    - **Open log** — open the log file (`%APPDATA%\ps-battery\ps-battery.log`).
 
