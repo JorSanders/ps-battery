@@ -15,6 +15,7 @@ const ALERT_INTERVAL: Duration = Duration::from_secs(300);
 
 fn main() {
     ps_battery::logger::init();
+    ps_battery::tray::autostart::init();
 
     let hidden_window = create_hidden_window();
     let mut tray_icon = add_tray_icon(hidden_window);

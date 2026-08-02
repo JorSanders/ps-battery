@@ -62,6 +62,9 @@ struct ActiveMenu {
     menu_hwnd: Option<HWND>,
     last_generation: u64,
     scan_status: ScanStatus,
+    /// Packaged builds resolve this on a worker thread, so it can change
+    /// while the menu is open.
+    last_autostart_enabled: bool,
 }
 
 thread_local! {
@@ -183,10 +186,15 @@ fn try_refresh_active_menu() {
 
         let current_generation = get_generation();
         let new_status = state.scan_status.next(is_polling());
-        if current_generation != state.last_generation || new_status != state.scan_status {
+        let autostart_enabled = autostart::is_enabled();
+        if current_generation != state.last_generation
+            || new_status != state.scan_status
+            || autostart_enabled != state.last_autostart_enabled
+        {
             refresh_menu(state.menu, menu_hwnd, new_status);
             state.last_generation = current_generation;
             state.scan_status = new_status;
+            state.last_autostart_enabled = autostart_enabled;
         }
     });
 }
@@ -211,6 +219,7 @@ pub extern "system" fn window_proc(
             // HID scan runs there, not on this (UI) thread, so it never
             // blocks the menu from opening.
             request_poll();
+            autostart::request_refresh();
 
             let menu = match unsafe { CreatePopupMenu() } {
                 Ok(menu) => menu,
@@ -228,6 +237,7 @@ pub extern "system" fn window_proc(
                     menu_hwnd: None,
                     last_generation: get_generation(),
                     scan_status,
+                    last_autostart_enabled: autostart::is_enabled(),
                 });
             });
 
