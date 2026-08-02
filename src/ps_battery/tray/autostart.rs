@@ -16,9 +16,6 @@ fn to_wide(s: &str) -> Vec<u16> {
 pub fn is_enabled() -> bool {
     let sub = to_wide(RUN_SUBKEY);
     let val = to_wide(APP_NAME);
-    let mut buf = [0u16; 260];
-    #[allow(clippy::cast_possible_truncation)]
-    let mut cb = (buf.len() * 2) as u32;
     unsafe {
         RegGetValueW(
             HKEY_CURRENT_USER,
@@ -26,8 +23,8 @@ pub fn is_enabled() -> bool {
             PCWSTR(val.as_ptr()),
             RRF_RT_REG_SZ,
             None,
-            Some(buf.as_mut_ptr().cast()),
-            Some(&raw mut cb),
+            None,
+            None,
         )
         .is_ok()
     }
