@@ -18,7 +18,11 @@ const TRAY_TIP_TEXT: &str = concat!("PS Battery: v", env!("CARGO_PKG_VERSION"));
 pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let mut sz_tip = [0u16; 128];
     let tip_utf16 = TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>();
-    sz_tip[..tip_utf16.len()].copy_from_slice(&tip_utf16);
+    let tip_len = tip_utf16.len().min(sz_tip.len());
+    sz_tip[..tip_len].copy_from_slice(&tip_utf16[..tip_len]);
+    if tip_len == sz_tip.len() {
+        sz_tip[tip_len - 1] = 0;
+    }
 
     let h_icon = match unsafe { LoadIconW(None, IDI_APPLICATION) } {
         Ok(icon) => icon,
