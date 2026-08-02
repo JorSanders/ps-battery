@@ -15,7 +15,6 @@ const BLUETOOTH_GUID_SUBSTRING: &str = "00001124-0000-1000-8000-00805F9B34FB";
 static POLL_SIGNAL: OnceLock<(Mutex<bool>, Condvar)> = OnceLock::new();
 static IS_POLLING: AtomicBool = AtomicBool::new(false);
 
-/// Whether `poll_controllers` is currently in the middle of a scan.
 pub fn is_polling() -> bool {
     IS_POLLING.load(Ordering::Acquire)
 }
@@ -34,7 +33,6 @@ fn poll_signal() -> &'static (Mutex<bool>, Condvar) {
     POLL_SIGNAL.get_or_init(|| (Mutex::new(false), Condvar::new()))
 }
 
-/// Wakes the polling thread early, triggering an immediate poll.
 pub fn request_poll() {
     let (lock, cvar) = poll_signal();
     *lock.lock().expect("poll signal poisoned") = true;

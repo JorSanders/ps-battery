@@ -158,8 +158,6 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
     }
 }
 
-/// Rebuilds `menu` in place from the latest controller data and forces the
-/// still-open popup window (`menu_hwnd`) to repaint with it.
 fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
     unsafe {
         while GetMenuItemCount(Some(menu)) > 0 {
@@ -177,9 +175,7 @@ fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
     }
 }
 
-/// Refreshes the currently tracked menu if the controller data or scan
-/// status has moved on since it was last built. Called both from the
-/// per-tick timer and from `WM_ENTERIDLE`.
+/// Called both from the per-tick timer and from `WM_ENTERIDLE`.
 fn try_refresh_active_menu() {
     ACTIVE_MENU.with_borrow_mut(|active| {
         let Some(state) = active.as_mut() else { return };
