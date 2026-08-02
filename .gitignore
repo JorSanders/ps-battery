@@ -1,2 +1,9 @@
 /target
 .claude/settings.local.json
+
+# MSIX packaging build output
+/dist
+*.msix
+*.msixbundle
+*.pfx
+*.cer

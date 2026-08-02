@@ -90,3 +90,50 @@ jobs:
             target/release/ps-battery.exe.bundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Builds the MSIX used for Microsoft Store submission. It is signed with a
+  # throwaway self-signed certificate purely so the package is well-formed —
+  # the Store re-signs on ingestion. That cert is NOT trusted on end-user
+  # machines, so this package is uploaded as a workflow artifact for manual
+  # Partner Center submission, never as a public release asset.
+  build-msix:
+    needs: release-please
+    if: ${{ always() && (needs.release-please.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch') }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: microsoft/setup-WinAppCli@v0.1  # pin — update when upgrading
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Stage package layout
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory dist | Out-Null
+          Copy-Item target/release/ps-battery.exe dist/
+
+      # MSIX requires a 4-part version; Cargo's is 3-part semver. Patched via
+      # the XML DOM rather than a regex, so it can't also hit the xml
+      # declaration or MinVersion/MaxVersionTested.
+      - name: Set manifest version from Cargo.toml
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          [xml]$doc = Get-Content Package.appxmanifest
+          $doc.Package.Identity.Version = "$version.0"
+          $doc.Save((Resolve-Path Package.appxmanifest))
+          Write-Output "MSIX version: $version.0"
+
+      - name: Pack MSIX
+        run: winapp pack ./dist --manifest Package.appxmanifest --generate-cert
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-package
+          path: '*.msix'
+          if-no-files-found: error

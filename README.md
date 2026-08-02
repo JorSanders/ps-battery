@@ -30,6 +30,28 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 <img src="./images/tray.png" alt="Tray example" width="400" />
 
+## Microsoft Store packaging
+
+The app is also packaged as an MSIX so it can be submitted to the Microsoft Store, where Microsoft signs the package and users don't get the "Unknown publisher" warning that the direct `.exe` download shows. The direct `.exe` download stays available either way.
+
+Every release builds the MSIX and uploads it as a **workflow artifact** (not a release asset — it is signed with a throwaway self-signed certificate that end users do not trust; the Store re-signs on submission).
+
+Requires the [winapp CLI](https://github.com/microsoft/winappCli) (`winget install microsoft.winappcli`):
+
+```
+cargo build --release                                  # build the exe
+mkdir dist && copy target\release\ps-battery.exe dist\  # stage the layout
+winapp pack ./dist --manifest Package.appxmanifest --generate-cert
+```
+
+To run locally with real package identity (requires Windows Developer Mode; no signing needed):
+
+```
+winapp run .\target\release
+```
+
+Before an actual Store submission, two things in `Package.appxmanifest` still need replacing: the placeholder `Publisher` CN (issued by Partner Center once the app name is reserved) and the placeholder icons in `Assets/`.
+
 ## Disclaimer
 
 I am a frontend/backend web developer. I have no prior experience building Windows applications or writing Rust code. Neither do I know anything about the PlayStation controller specifications. This has only been tested using my own controllers on my own Windows installation.
