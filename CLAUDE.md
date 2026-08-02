@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 Focus on writing readable, maintainable and simple code.
+All variables should have self explanatory names.
 Don't add comments unless absolutely needed to explain unexpected behaviour or code.
 Code should pass Clippy.
 Don't use abreviations unless variable/file names would become way too long.
