@@ -9,33 +9,41 @@
 
   <!-- Battery: outlined body with level segments inside -->
   <rect x="228" y="20" width="56" height="26" rx="8" fill="#f06aa5"/>
-  <rect x="148" y="44" width="216" height="428" rx="32"
+  <rect x="148" y="44" width="216" height="452" rx="32"
         fill="none" stroke="#f06aa5" stroke-width="16"/>
-  <rect x="174" y="70" width="164" height="79" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="169" width="164" height="79" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="268" width="164" height="79" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="367" width="164" height="79" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="70" width="164" height="81" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="176" width="164" height="81" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="282" width="164" height="81" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="388" width="164" height="81" rx="12" fill="#f06aa5"/>
 
-  <!-- Controller -->
-  <circle cx="136" cy="362" r="76" fill="#3dd6cf"/>
-  <circle cx="376" cy="362" r="76" fill="#3dd6cf"/>
-  <rect x="58" y="248" width="396" height="150" rx="75" fill="#3dd6cf"/>
+  <!-- Controller: tapered grips rather than a plain wide body -->
+  <path d="M 145 268
+           Q 256 254 367 268
+           C 400 276 420 300 424 334
+           C 428 380 416 432 388 454
+           C 368 468 344 456 332 428
+           C 318 400 298 377 256 377
+           C 214 377 194 400 180 428
+           C 168 456 144 468 124 454
+           C 96 432 84 380 88 334
+           C 92 300 112 276 145 268 Z"
+        fill="#3dd6cf"/>
 
   <!-- D-pad -->
-  <rect x="154" y="272" width="24" height="48" rx="5" fill="#0e918c"/>
-  <rect x="142" y="284" width="48" height="24" rx="5" fill="#0e918c"/>
+  <rect x="160" y="282" width="24" height="48" rx="5" fill="#0e918c"/>
+  <rect x="148" y="294" width="48" height="24" rx="5" fill="#0e918c"/>
 
   <!-- Face buttons -->
-  <circle cx="350" cy="268" r="12" fill="#0e918c"/>
-  <circle cx="378" cy="296" r="12" fill="#0e918c"/>
-  <circle cx="350" cy="324" r="12" fill="#0e918c"/>
-  <circle cx="322" cy="296" r="12" fill="#0e918c"/>
+  <circle cx="340" cy="280" r="12" fill="#0e918c"/>
+  <circle cx="366" cy="306" r="12" fill="#0e918c"/>
+  <circle cx="340" cy="332" r="12" fill="#0e918c"/>
+  <circle cx="314" cy="306" r="12" fill="#0e918c"/>
 
   <!-- Joysticks -->
-  <circle cx="214" cy="356" r="30" fill="#0e918c"/>
-  <circle cx="214" cy="356" r="12" fill="#3dd6cf"/>
-  <circle cx="298" cy="356" r="30" fill="#0e918c"/>
-  <circle cx="298" cy="356" r="12" fill="#3dd6cf"/>
+  <circle cx="216" cy="348" r="26" fill="#0e918c"/>
+  <circle cx="216" cy="348" r="11" fill="#3dd6cf"/>
+  <circle cx="296" cy="348" r="26" fill="#0e918c"/>
+  <circle cx="296" cy="348" r="11" fill="#3dd6cf"/>
 
   <!-- Notification badge -->
   <circle cx="446" cy="80" r="50" fill="#ffcc33"/>
