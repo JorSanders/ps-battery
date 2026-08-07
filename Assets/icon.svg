@@ -1,16 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Background matches the site's dark-theme background; turquoise/pink
-       below are that theme's variants, already contrast-tuned against it. -->
-  <rect width="512" height="512" fill="#111a1c"/>
+  <!-- Turquoise/pink are the site's dark-theme accent pair; the darker
+       shades used for the sticks and d-pad are the light-theme variants of
+       the same colors, reused here as the detail tone. -->
 
-  <rect x="156" y="80" width="200" height="320" rx="28" fill="#f06aa5"/>
-  <rect x="216" y="52" width="80" height="30" rx="8" fill="#f06aa5"/>
+  <!-- Battery: outlined body with level segments inside -->
+  <rect x="232" y="20" width="48" height="28" rx="8" fill="#f06aa5"/>
+  <rect x="164" y="44" width="184" height="252" rx="26"
+        fill="none" stroke="#f06aa5" stroke-width="16"/>
+  <rect x="186" y="66" width="140" height="58" rx="10" fill="#f06aa5"/>
+  <rect x="186" y="140" width="140" height="58" rx="10" fill="#f06aa5"/>
+  <rect x="186" y="214" width="140" height="58" rx="10" fill="#f06aa5"/>
 
-  <circle cx="150" cy="322" r="76" fill="#3dd6cf"/>
-  <circle cx="362" cy="322" r="76" fill="#3dd6cf"/>
-  <rect x="96" y="196" width="320" height="140" rx="70" fill="#3dd6cf"/>
+  <!-- Controller -->
+  <circle cx="146" cy="400" r="78" fill="#3dd6cf"/>
+  <circle cx="366" cy="400" r="78" fill="#3dd6cf"/>
+  <rect x="76" y="292" width="360" height="150" rx="75" fill="#3dd6cf"/>
 
-  <circle cx="398" cy="128" r="58" fill="#ffcc33"/>
-  <rect x="386" y="98" width="24" height="52" rx="12" fill="#111a1c"/>
-  <circle cx="398" cy="164" r="12" fill="#111a1c"/>
+  <!-- D-pad -->
+  <rect x="156" y="316" width="24" height="48" rx="5" fill="#0e918c"/>
+  <rect x="144" y="328" width="48" height="24" rx="5" fill="#0e918c"/>
+
+  <!-- Face buttons -->
+  <circle cx="344" cy="312" r="12" fill="#0e918c"/>
+  <circle cx="372" cy="340" r="12" fill="#0e918c"/>
+  <circle cx="344" cy="368" r="12" fill="#0e918c"/>
+  <circle cx="316" cy="340" r="12" fill="#0e918c"/>
+
+  <!-- Joysticks -->
+  <circle cx="218" cy="400" r="30" fill="#0e918c"/>
+  <circle cx="218" cy="400" r="12" fill="#3dd6cf"/>
+  <circle cx="294" cy="400" r="30" fill="#0e918c"/>
+  <circle cx="294" cy="400" r="12" fill="#3dd6cf"/>
+
+  <!-- Notification badge -->
+  <circle cx="444" cy="68" r="52" fill="#ffcc33"/>
+  <rect x="433" y="38" width="22" height="44" rx="11" fill="#1a1d21"/>
+  <circle cx="444" cy="98" r="11" fill="#1a1d21"/>
 </svg>
