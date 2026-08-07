@@ -3,47 +3,47 @@
        shades used for the sticks and d-pad are the light-theme variants of
        the same colors, reused here as the detail tone.
        The controller is drawn after the battery so it sits in front, with
-       the battery running the full height behind it: visible above, and
-       emerging again below the grips. The controller's top edge lands in a
-       gap between segments so no segment is cut mid-way. -->
+       the battery running behind it: visible above, and emerging again
+       below the grips. The controller's top edge lands in a gap between
+       segments so no segment is cut mid-way. -->
 
   <!-- Battery: outlined body with level segments inside -->
-  <rect x="228" y="20" width="56" height="26" rx="8" fill="#f06aa5"/>
-  <rect x="148" y="44" width="216" height="452" rx="32"
+  <rect x="228" y="54" width="56" height="26" rx="8" fill="#f06aa5"/>
+  <rect x="148" y="80" width="216" height="416" rx="32"
         fill="none" stroke="#f06aa5" stroke-width="16"/>
-  <rect x="174" y="70" width="164" height="81" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="176" width="164" height="81" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="282" width="164" height="81" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="388" width="164" height="81" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="106" width="164" height="77" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="201" width="164" height="77" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="296" width="164" height="77" rx="12" fill="#f06aa5"/>
+  <rect x="174" y="391" width="164" height="77" rx="12" fill="#f06aa5"/>
 
-  <!-- Controller: tapered grips rather than a plain wide body -->
-  <path d="M 145 268
-           Q 256 254 367 268
-           C 400 276 420 300 424 334
-           C 428 380 416 432 388 454
-           C 368 468 344 456 332 428
-           C 318 400 298 377 256 377
-           C 214 377 194 400 180 428
-           C 168 456 144 468 124 454
-           C 96 432 84 380 88 334
-           C 92 300 112 276 145 268 Z"
+  <!-- Controller: tapered grips with flattened bottoms -->
+  <path d="M 145 294
+           Q 256 280 367 294
+           C 404 302 424 328 428 360
+           C 434 404 426 448 402 462
+           C 382 474 356 466 342 438
+           C 328 408 300 396 256 396
+           C 212 396 184 408 170 438
+           C 156 466 130 474 110 462
+           C 86 448 78 404 84 360
+           C 88 328 108 302 145 294 Z"
         fill="#3dd6cf"/>
 
   <!-- D-pad -->
-  <rect x="160" y="282" width="24" height="48" rx="5" fill="#0e918c"/>
-  <rect x="148" y="294" width="48" height="24" rx="5" fill="#0e918c"/>
+  <rect x="150" y="300" width="24" height="48" rx="5" fill="#0e918c"/>
+  <rect x="138" y="312" width="48" height="24" rx="5" fill="#0e918c"/>
 
   <!-- Face buttons -->
-  <circle cx="340" cy="280" r="12" fill="#0e918c"/>
-  <circle cx="366" cy="306" r="12" fill="#0e918c"/>
-  <circle cx="340" cy="332" r="12" fill="#0e918c"/>
-  <circle cx="314" cy="306" r="12" fill="#0e918c"/>
+  <circle cx="350" cy="304" r="11" fill="#0e918c"/>
+  <circle cx="376" cy="330" r="11" fill="#0e918c"/>
+  <circle cx="350" cy="356" r="11" fill="#0e918c"/>
+  <circle cx="324" cy="330" r="11" fill="#0e918c"/>
 
   <!-- Joysticks -->
-  <circle cx="216" cy="348" r="26" fill="#0e918c"/>
-  <circle cx="216" cy="348" r="11" fill="#3dd6cf"/>
-  <circle cx="296" cy="348" r="26" fill="#0e918c"/>
-  <circle cx="296" cy="348" r="11" fill="#3dd6cf"/>
+  <circle cx="212" cy="368" r="25" fill="#0e918c"/>
+  <circle cx="212" cy="368" r="10" fill="#3dd6cf"/>
+  <circle cx="300" cy="368" r="25" fill="#0e918c"/>
+  <circle cx="300" cy="368" r="10" fill="#3dd6cf"/>
 
   <!-- Notification badge -->
   <circle cx="446" cy="80" r="50" fill="#ffcc33"/>
