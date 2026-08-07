@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.21.0](https://github.com/JorSanders/ps-battery/compare/v1.20.0...v1.21.0) (2026-08-07)
+
+
+### Features
+
+* add a real app icon (turquoise controller, pink battery, notification badge) ([010f24c](https://github.com/JorSanders/ps-battery/commit/010f24c1ee1e8b883f6e821db302b809bc93f810))
+* package the app as MSIX for Microsoft Store submission ([9c3b72a](https://github.com/JorSanders/ps-battery/commit/9c3b72a48b2009c0b2a4a7d1bc999b547bdc180d))
+* refine the app icon with more detail and a transparent background ([84edea4](https://github.com/JorSanders/ps-battery/commit/84edea4a626d90ed8faa5addc8b88c79d0469ecc))
+* show the app icon in the tray instead of the stock Windows one ([015d863](https://github.com/JorSanders/ps-battery/commit/015d8631ccd6d3e056191009b26d776a94f47def))
+* use StartupTask for autostart in Store-packaged builds ([b78c712](https://github.com/JorSanders/ps-battery/commit/b78c7120447de055bdd876ec2c02af58e2d20871))
+
+
+### Bug Fixes
+
+* drop a controller from the tray menu once it disconnects ([c8e772a](https://github.com/JorSanders/ps-battery/commit/c8e772a581c821ef1b11149d1cf467f4a494daaf))
+* flatten the controller grips and shorten the battery in the icon ([ff0d350](https://github.com/JorSanders/ps-battery/commit/ff0d350ddc0aac67bd5467263d7e8adbf7a264d2))
+* give the controller a tapered silhouette in the app icon ([ecdef59](https://github.com/JorSanders/ps-battery/commit/ecdef59f4b1f3aaee5a23ea693210c4097da0e79))
+* layer the controller in front of the battery in the app icon ([917a7a6](https://github.com/JorSanders/ps-battery/commit/917a7a67b4a8c77ea435d2663549b34a9a3bd6d0))
+* let the battery show below the controller in the app icon ([c135ba8](https://github.com/JorSanders/ps-battery/commit/c135ba848de48080cab8a12c0d15b00c547eba27))
+* lower the bumper tabs and shorten the battery in the icon ([80085ad](https://github.com/JorSanders/ps-battery/commit/80085adc1804fca90e8e7827ce3883c6e5da2662))
+* remove the notification badge from the tray icon ([9aa6aad](https://github.com/JorSanders/ps-battery/commit/9aa6aad99a106aa81a0958860bc44f8c1cf85d75))
+* set the real Store identity in the package manifest ([05ef4a7](https://github.com/JorSanders/ps-battery/commit/05ef4a755feb5f564980d33ae1685dee1aca255f))
+* trace the controller outline from a DualSense reference ([c9a12d1](https://github.com/JorSanders/ps-battery/commit/c9a12d1bb330da9aa688969a18426c3b9184b28f))
+* use a middle dot instead of em dashes in the tray menu ([fef1bdd](https://github.com/JorSanders/ps-battery/commit/fef1bdd776675adf2cf308d504b26a22a0822fc7))
+
 ## [1.20.0](https://github.com/JorSanders/ps-battery/compare/v1.19.0...v1.20.0) (2026-08-02)
 
 
