@@ -50,7 +50,14 @@ To run locally with real package identity (requires Windows Developer Mode; no s
 winapp run .\target\release
 ```
 
-Before an actual Store submission, two things in `Package.appxmanifest` still need replacing: the placeholder `Publisher` CN (issued by Partner Center once the app name is reserved) and the placeholder icons in `Assets/`.
+Before an actual Store submission, the placeholder `Publisher` CN in `Package.appxmanifest` still needs replacing with the real one Partner Center issues once the app name is reserved.
+
+`Assets/icon.svg` is the source of truth for the app icon; `Assets/*.png` and `Assets/app.ico` are generated from it and shouldn't be hand-edited. Regenerate them after changing the SVG with:
+
+```
+rsvg-convert -w 1024 -h 1024 Assets/icon.svg -o icon_source.png
+winapp manifest update-assets icon_source.png
+```
 
 ## Disclaimer
 

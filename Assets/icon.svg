@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background matches the site's dark-theme background; turquoise/pink
+       below are that theme's variants, already contrast-tuned against it. -->
+  <rect width="512" height="512" fill="#111a1c"/>
+
+  <rect x="156" y="80" width="200" height="320" rx="28" fill="#f06aa5"/>
+  <rect x="216" y="52" width="80" height="30" rx="8" fill="#f06aa5"/>
+
+  <circle cx="150" cy="322" r="76" fill="#3dd6cf"/>
+  <circle cx="362" cy="322" r="76" fill="#3dd6cf"/>
+  <rect x="96" y="196" width="320" height="140" rx="70" fill="#3dd6cf"/>
+
+  <circle cx="398" cy="128" r="58" fill="#ffcc33"/>
+  <rect x="386" y="98" width="24" height="52" rx="12" fill="#111a1c"/>
+  <circle cx="398" cy="164" r="12" fill="#111a1c"/>
+</svg>
