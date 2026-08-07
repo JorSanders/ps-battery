@@ -8,42 +8,53 @@
        segments so no segment is cut mid-way. -->
 
   <!-- Battery: outlined body with level segments inside -->
-  <rect x="228" y="54" width="56" height="26" rx="8" fill="#f06aa5"/>
-  <rect x="148" y="80" width="216" height="416" rx="32"
+  <rect x="232" y="56" width="48" height="24" rx="8" fill="#f06aa5"/>
+  <rect x="168" y="88" width="176" height="408" rx="28"
         fill="none" stroke="#f06aa5" stroke-width="16"/>
-  <rect x="174" y="106" width="164" height="77" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="201" width="164" height="77" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="296" width="164" height="77" rx="12" fill="#f06aa5"/>
-  <rect x="174" y="391" width="164" height="77" rx="12" fill="#f06aa5"/>
+  <rect x="192" y="112" width="128" height="59" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="187" width="128" height="59" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="262" width="128" height="59" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="337" width="128" height="59" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="412" width="128" height="59" rx="10" fill="#f06aa5"/>
 
-  <!-- Controller: tapered grips with flattened bottoms -->
-  <path d="M 145 294
-           Q 256 280 367 294
-           C 404 302 424 328 428 360
-           C 434 404 426 448 402 462
-           C 382 474 356 466 342 438
-           C 328 408 300 396 256 396
-           C 212 396 184 408 170 438
-           C 156 466 130 474 110 462
-           C 86 448 78 404 84 360
-           C 88 328 108 302 145 294 Z"
+  <!-- Controller: DualSense silhouette. Widest at the foot of the grips,
+       which flare outward as they descend, with L1/R1 tabs at the
+       shoulders. -->
+  <rect x="138" y="247" width="44" height="34" rx="11" fill="#3dd6cf"/>
+  <rect x="330" y="247" width="44" height="34" rx="11" fill="#3dd6cf"/>
+  <path d="M 165 264
+           Q 256 256 347 264
+           C 372 268 388 276 396 290
+           C 408 312 416 360 416 400
+           C 417 432 410 456 396 464
+           C 384 471 368 470 358 460
+           C 344 446 332 420 322 404
+           C 314 394 300 391 285 391
+           L 227 391
+           C 212 391 198 394 190 404
+           C 180 420 168 446 154 460
+           C 144 470 128 471 116 464
+           C 102 456 95 432 96 400
+           C 96 360 104 312 116 290
+           C 124 276 140 268 165 264 Z"
         fill="#3dd6cf"/>
 
   <!-- D-pad -->
-  <rect x="150" y="300" width="24" height="48" rx="5" fill="#0e918c"/>
-  <rect x="138" y="312" width="48" height="24" rx="5" fill="#0e918c"/>
+  <rect x="144" y="296" width="24" height="48" rx="5" fill="#0e918c"/>
+  <rect x="132" y="308" width="48" height="24" rx="5" fill="#0e918c"/>
 
   <!-- Face buttons -->
-  <circle cx="350" cy="304" r="11" fill="#0e918c"/>
-  <circle cx="376" cy="330" r="11" fill="#0e918c"/>
-  <circle cx="350" cy="356" r="11" fill="#0e918c"/>
-  <circle cx="324" cy="330" r="11" fill="#0e918c"/>
+  <circle cx="356" cy="292" r="11" fill="#0e918c"/>
+  <circle cx="382" cy="318" r="11" fill="#0e918c"/>
+  <circle cx="356" cy="344" r="11" fill="#0e918c"/>
+  <circle cx="330" cy="318" r="11" fill="#0e918c"/>
 
-  <!-- Joysticks -->
-  <circle cx="212" cy="368" r="25" fill="#0e918c"/>
-  <circle cx="212" cy="368" r="10" fill="#3dd6cf"/>
-  <circle cx="300" cy="368" r="25" fill="#0e918c"/>
-  <circle cx="300" cy="368" r="10" fill="#3dd6cf"/>
+  <!-- Joysticks: rings, thicker than the line-art reference so they still
+       read once the icon is scaled down -->
+  <circle cx="203" cy="364" r="23" fill="#0e918c"/>
+  <circle cx="203" cy="364" r="11" fill="#3dd6cf"/>
+  <circle cx="309" cy="364" r="23" fill="#0e918c"/>
+  <circle cx="309" cy="364" r="11" fill="#3dd6cf"/>
 
   <!-- Notification badge -->
   <circle cx="446" cy="80" r="50" fill="#ffcc33"/>
