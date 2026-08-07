@@ -83,36 +83,14 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
         );
         log_info!("path='{}'", path);
 
-        let Some(hid_device) = open_device(hid_api, &controller_info) else { continue };
-
-        let buffer = read_controller_input_report(&hid_device, &name, is_bluetooth, product_id);
+        let buffer = open_device(hid_api, &controller_info)
+            .map(|hid_device| {
+                read_controller_input_report(&hid_device, &name, is_bluetooth, product_id)
+            })
+            .unwrap_or_default();
 
         if buffer.is_empty() || buffer[0] == 0 {
-            let Some(previous_controller) =
-                previous_controllers.iter().find(|controller| controller.path == path)
-            else {
-                log_err!("Buffer is empty and device not found in previous results");
-                continue;
-            };
-
-            if previous_controller.last_read_failed {
-                log_err!("Buffer is empty and last read also failed");
-                continue;
-            }
-
-            log_err!("Buffer is empty, using last result");
-
-            status_list.push(ControllerStatus {
-                name: previous_controller.name.clone(),
-                battery_percent: previous_controller.battery_percent,
-                is_charging: previous_controller.is_charging,
-                is_fully_charged: previous_controller.is_fully_charged,
-                is_bluetooth: previous_controller.is_bluetooth,
-                path: previous_controller.path.clone(),
-                last_read_failed: true,
-                unexpected_battery_data: previous_controller.unexpected_battery_data,
-            });
-
+            status_list.extend(carry_over_previous_read(&previous_controllers, &path));
             continue;
         }
 
@@ -135,8 +113,30 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
         });
     }
 
-    if !status_list.is_empty() {
-        set_controllers(status_list);
+    set_controllers(status_list);
+}
+
+/// Windows keeps listing the HID device of a disconnected Bluetooth controller,
+/// so a controller that is gone looks identical to one whose read hiccuped. The
+/// first failed read therefore keeps the previous values and a second failure in
+/// a row drops the controller, which is what makes it disappear from the menu.
+fn carry_over_previous_read(
+    previous_controllers: &[ControllerStatus],
+    path: &str,
+) -> Option<ControllerStatus> {
+    let Some(previous_controller) =
+        previous_controllers.iter().find(|controller| controller.path == path)
+    else {
+        log_err!("Buffer is empty and device not found in previous results");
+        return None;
+    };
+
+    if previous_controller.last_read_failed {
+        log_err!("Buffer is empty and last read also failed, dropping controller");
+        return None;
     }
-    // else: HID found controllers but all reads failed, keep old state
+
+    log_err!("Buffer is empty, using last result");
+
+    Some(ControllerStatus { last_read_failed: true, ..previous_controller.clone() })
 }
