@@ -7,28 +7,28 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 ## Features
 
 1. Alerts you every 5 minutes if you have a low-battery controller connected via Bluetooth that is not charging.
-2. If a low-battery controller is detected, alert the user in the following way:
+2. If a low-battery controller is detected, alert the user in the following way. Controllers report their charge as a single 0-10 level, so the battery percentage is always a multiple of 10 and these are the only three levels that trigger an alert:
    - Show a Windows notification balloon based on remaining battery:
      - 0% => Error balloon
-     - ≤10% => Warning balloon
-     - ≤20% => Info balloon
+     - 10% => Warning balloon
+     - 20% => Info balloon
    - Play a system sound when in game / fullscreen / presentation mode (to cut through the DND silence):
      - 0% => Critical Stop
-     - ≤10% => Exclamation
-     - ≤20% => Notification
+     - 10% => Exclamation
+     - 20% => Notification
 3. Adds an application to the Windows tray. Opening the menu triggers an immediate background scan (instead of waiting for the next automatic check), then shows:
    - A "Scanning for controllers…" / "Scan completed" line while the scan is running and just after it finishes.
    - All connected controllers, their battery %, and whether they are charging.
    - **Run on startup**: run the app on Windows login (off by default).
    - **Open log**: open the log file (`%APPDATA%\ps-battery\ps-battery.log`).
 
-<img src="./images/notification_30.png" alt="Notification example" width="400" />
+<img src="./images/notification_20.png" alt="Info balloon at 20% battery" width="400" />
 
-<img src="./images/notification_20.png" alt="Notification example" width="400" />
+<img src="./images/notification_10.png" alt="Warning balloon at 10% battery" width="400" />
 
-<img src="./images/notification_10.png" alt="Notification example" width="400" />
+<img src="./images/notification_0.png" alt="Error balloon at 0% battery" width="400" />
 
-<img src="./images/tray.png" alt="Tray example" width="400" />
+<img src="./images/tray.png" alt="Tray menu showing connected controllers" width="400" />
 
 ## Microsoft Store packaging
 
