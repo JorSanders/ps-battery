@@ -50,12 +50,17 @@ To run locally with real package identity (requires Windows Developer Mode; no s
 winapp run .\target\release
 ```
 
-`Assets/icon.svg` is the source of truth for the app icon; `Assets/*.png` and `Assets/app.ico` are generated from it and shouldn't be hand-edited. Regenerate them after changing the SVG with:
+## App icons
+
+`icon-sources/store-icon.svg` is the source of truth for the app icon. Everything in `Assets/` is generated from it and shouldn't be hand-edited.
+
+Regenerate from Windows after changing the SVG. The [winapp CLI](https://github.com/microsoft/winappCli) reads the SVG directly and rewrites every image referenced in `Package.appxmanifest`, at all required sizes and scales, along with `Assets/app.ico`, which `build.rs` embeds into the exe:
 
 ```
-rsvg-convert -w 1024 -h 1024 Assets/icon.svg -o icon_source.png
-winapp manifest update-assets icon_source.png
+winapp manifest update-assets icon-sources/store-icon.svg
 ```
+
+The committed assets were generated with winapp 0.5.0. Different versions rasterize the same SVG with slightly different antialiasing, so upgrading rewrites every generated image even when the SVG has not changed. That is expected rather than a problem: regenerate the full set, commit it in one go, and note the new version here so the next person knows what produced them.
 
 ## Privacy
 
