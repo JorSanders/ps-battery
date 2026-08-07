@@ -9,11 +9,35 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Shell::{
     NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIS_HIDDEN, NOTIFYICONDATAW, Shell_NotifyIconW,
 };
-use windows::Win32::UI::WindowsAndMessaging::{IDI_APPLICATION, LoadIconW};
+use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::UI::WindowsAndMessaging::{HICON, IDI_APPLICATION, LoadIconW};
+use windows::core::PCWSTR;
 
 pub const WM_TRAYICON: u32 = 0x8000 + 1;
 pub const TRAY_ICON_ID: u32 = 100;
 const TRAY_TIP_TEXT: &str = concat!("PS Battery: v", env!("CARGO_PKG_VERSION"));
+
+/// Resource id `build.rs` embeds `Assets/app.ico` under.
+const APP_ICON_RESOURCE_ID: u16 = 1;
+
+/// Falls back to the stock Windows icon if the embedded one can't be loaded,
+/// since a missing icon isn't worth refusing to start over.
+fn load_app_icon() -> Option<HICON> {
+    let module = match unsafe { GetModuleHandleW(PCWSTR::null()) } {
+        Ok(module) => module,
+        Err(e) => {
+            log_err!("GetModuleHandleW failed: {e}");
+            return None;
+        }
+    };
+    match unsafe { LoadIconW(Some(module.into()), PCWSTR(APP_ICON_RESOURCE_ID as *const u16)) } {
+        Ok(icon) => Some(icon),
+        Err(e) => {
+            log_err!("Loading the embedded app icon failed: {e}");
+            None
+        }
+    }
+}
 
 pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let mut sz_tip = [0u16; 128];
@@ -24,12 +48,15 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
         sz_tip[tip_len - 1] = 0;
     }
 
-    let h_icon = match unsafe { LoadIconW(None, IDI_APPLICATION) } {
-        Ok(icon) => icon,
-        Err(e) => {
-            log_err!("LoadIconW failed: {e}");
-            std::process::exit(1);
-        }
+    let h_icon = match load_app_icon() {
+        Some(icon) => icon,
+        None => match unsafe { LoadIconW(None, IDI_APPLICATION) } {
+            Ok(icon) => icon,
+            Err(e) => {
+                log_err!("LoadIconW failed: {e}");
+                std::process::exit(1);
+            }
+        },
     };
     let notify = NOTIFYICONDATAW {
         #[allow(clippy::cast_possible_truncation)]

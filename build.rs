@@ -6,6 +6,8 @@ fn main() {
         res.set("ProductName", "ps-battery");
         res.set("FileVersion", version);
         res.set("ProductVersion", version);
+        res.set_icon("Assets/app.ico");
+        println!("cargo:rerun-if-changed=Assets/app.ico");
         res.compile().expect("failed to compile Windows resources");
     }
 }
