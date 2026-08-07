@@ -138,5 +138,5 @@ pub fn poll_controllers(hid_api: &mut HidApi) {
     if !status_list.is_empty() {
         set_controllers(status_list);
     }
-    // else: HID found controllers but all reads failed — keep old state
+    // else: HID found controllers but all reads failed, keep old state
 }

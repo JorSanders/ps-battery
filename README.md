@@ -19,8 +19,8 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 3. Adds an application to the Windows tray. Opening the menu triggers an immediate background scan (instead of waiting for the next automatic check), then shows:
    - A "Scanning for controllers…" / "Scan completed" line while the scan is running and just after it finishes.
    - All connected controllers, their battery %, and whether they are charging.
-   - **Run on startup** — run the app on Windows login (off by default).
-   - **Open log** — open the log file (`%APPDATA%\ps-battery\ps-battery.log`).
+   - **Run on startup**: run the app on Windows login (off by default).
+   - **Open log**: open the log file (`%APPDATA%\ps-battery\ps-battery.log`).
 
 <img src="./images/notification_30.png" alt="Notification example" width="400" />
 
@@ -34,7 +34,7 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 The app is also packaged as an MSIX so it can be submitted to the Microsoft Store, where Microsoft signs the package and users don't get the "Unknown publisher" warning that the direct `.exe` download shows. The direct `.exe` download stays available either way.
 
-Every release builds the MSIX and uploads it as a **workflow artifact** (not a release asset — it is signed with a throwaway self-signed certificate that end users do not trust; the Store re-signs on submission).
+Every release builds the MSIX and uploads it as a **workflow artifact** rather than a release asset, because it is signed with a throwaway self-signed certificate that end users do not trust. The Store re-signs it on submission.
 
 Requires the [winapp CLI](https://github.com/microsoft/winappCli) (`winget install microsoft.winappcli`):
 
@@ -61,7 +61,7 @@ winapp manifest update-assets icon_source.png
 
 ## Privacy
 
-PS Battery collects nothing and sends nothing — it has no network access at all. It does write a local diagnostic log you can read or delete yourself. See [PRIVACY.md](PRIVACY.md).
+PS Battery collects nothing and sends nothing, because it has no network access at all. It does write a local diagnostic log you can read or delete yourself. See [PRIVACY.md](PRIVACY.md).
 
 ## Disclaimer
 

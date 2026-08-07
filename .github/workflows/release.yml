@@ -70,7 +70,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
         with:
-          cosign-release: v2.4.1  # pin — update when upgrading
+          cosign-release: v2.4.1  # pin, update when upgrading
 
       - name: Sign binary with Sigstore
         shell: pwsh
@@ -92,10 +92,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Builds the MSIX used for Microsoft Store submission. It is signed with a
-  # throwaway self-signed certificate purely so the package is well-formed —
-  # the Store re-signs on ingestion. That cert is NOT trusted on end-user
-  # machines, so this package is uploaded as a workflow artifact for manual
-  # Partner Center submission, never as a public release asset.
+  # throwaway self-signed certificate purely so the package is well-formed,
+  # since the Store re-signs on ingestion. That cert is NOT trusted on
+  # end-user machines, so this package is uploaded as a workflow artifact for
+  # manual Partner Center submission, never as a public release asset.
   build-msix:
     needs: release-please
     if: ${{ always() && (needs.release-please.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch') }}
@@ -105,7 +105,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: microsoft/setup-WinAppCli@v0.1  # pin — update when upgrading
+      - uses: microsoft/setup-WinAppCli@v0.1  # pin, update when upgrading
 
       - name: Build release binary
         run: cargo build --release

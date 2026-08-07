@@ -49,7 +49,7 @@ pub fn request_refresh() {
 
 /// Spawns the only thread allowed to touch `StartupTask`. WinRT calls are
 /// kept off the UI thread because `IAsyncOperation::join` waits on a raw
-/// `WaitForSingleObject` — pumping no messages — which would freeze the tray
+/// `WaitForSingleObject` that pumps no messages, which would freeze the tray
 /// menu that `window_proc` is drawing.
 pub fn start_worker() {
     std::thread::spawn(|| {

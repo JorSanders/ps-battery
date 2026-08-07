@@ -58,7 +58,7 @@ impl ScanStatus {
 struct ActiveMenu {
     menu: HMENU,
     /// The popup's own window handle, learned from the first `WM_ENTERIDLE`
-    /// we receive for it — needed to `InvalidateRect` it after a refresh.
+    /// we receive for it, needed to `InvalidateRect` it after a refresh.
     menu_hwnd: Option<HWND>,
     last_generation: u64,
     scan_status: ScanStatus,
@@ -252,7 +252,7 @@ pub extern "system" fn window_proc(
             // Called for its side effect: forces the hidden window to receive
             // WM_COMMAND when the user selects a menu item. The return value
             // is FALSE when the window isn't already in the foreground, which
-            // is the normal case for a background tray app — not an error.
+            // is the normal case for a background tray app, not an error.
             let _ = unsafe { SetForegroundWindow(hwnd) };
 
             let timer_id = unsafe {
