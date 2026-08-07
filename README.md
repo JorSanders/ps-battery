@@ -21,6 +21,7 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
    - All connected controllers, their battery %, and whether they are charging.
    - **Run on startup**: run the app on Windows login (off by default).
    - **Open log**: open the log file (`%APPDATA%\ps-battery\ps-battery.log`).
+4. Works with the DualSense and DualSense Edge (PS5), which are the ones I own and test with. DualShock 4 (PS4) controllers are recognised too, but I have no way to try them, so that support is untested.
 
 <img src="./images/notification_20.png" alt="Info balloon at 20% battery" width="400" />
 
@@ -30,9 +31,15 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 <img src="./images/tray.png" alt="Tray menu showing connected controllers" width="400" />
 
+## Microsoft Store
+
+The app has been submitted to the Microsoft Store and will be downloadable there once it passes certification. The direct `.exe` download stays available either way, and both are the same app.
+
+The only real reason to prefer the Store is trust. The `.exe` here is unsigned, so Windows shows an "Unknown publisher" warning before it will run. Getting rid of that warning means buying a code signing certificate, which costs a few hundred euros a year, and this is a free weekend project. The Store signs the package itself, so the warning goes away without me paying for a certificate.
+
 ## Microsoft Store packaging
 
-The app is also packaged as an MSIX so it can be submitted to the Microsoft Store, where Microsoft signs the package and users don't get the "Unknown publisher" warning that the direct `.exe` download shows. The direct `.exe` download stays available either way.
+The app is packaged as an MSIX for that submission.
 
 Every release builds the MSIX and uploads it as a **workflow artifact** rather than a release asset, because it is signed with a throwaway self-signed certificate that end users do not trust. The Store re-signs it on submission.
 
