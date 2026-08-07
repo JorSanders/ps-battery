@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 30 512 512" width="512" height="512">
+  <!-- The tray variant of Assets/icon.svg, without the notification badge: in
+       the notification area a badge reads as an unread notification from the
+       app rather than as part of its logo. The Store assets keep the badge.
+       The viewBox is shifted down by 30 so the artwork, which the badge used
+       to balance in the top right, sits centred on its own. -->
+
+  <!-- Battery: outlined body with level segments inside -->
+  <rect x="232" y="106" width="48" height="24" rx="8" fill="#f06aa5"/>
+  <rect x="168" y="138" width="176" height="328" rx="28"
+        fill="none" stroke="#f06aa5" stroke-width="16"/>
+  <rect x="192" y="163" width="128" height="56" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="237" width="128" height="56" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="311" width="128" height="56" rx="10" fill="#f06aa5"/>
+  <rect x="192" y="385" width="128" height="56" rx="10" fill="#f06aa5"/>
+
+  <!-- Controller: DualSense silhouette. Widest at the foot of the grips,
+       which flare outward as they descend, with L1/R1 tabs at the
+       shoulders. -->
+  <rect x="138" y="224" width="44" height="30" rx="11" fill="#3dd6cf"/>
+  <rect x="330" y="224" width="44" height="30" rx="11" fill="#3dd6cf"/>
+  <path d="M 165 234
+           Q 256 226 347 234
+           C 372 238 388 246 396 260
+           C 408 282 416 330 416 370
+           C 417 402 410 426 396 434
+           C 384 441 368 440 358 430
+           C 344 416 332 390 322 374
+           C 314 364 300 361 285 361
+           L 227 361
+           C 212 361 198 364 190 374
+           C 180 390 168 416 154 430
+           C 144 440 128 441 116 434
+           C 102 426 95 402 96 370
+           C 96 330 104 282 116 260
+           C 124 246 140 238 165 234 Z"
+        fill="#3dd6cf"/>
+
+  <!-- D-pad -->
+  <rect x="144" y="266" width="24" height="48" rx="5" fill="#0e918c"/>
+  <rect x="132" y="278" width="48" height="24" rx="5" fill="#0e918c"/>
+
+  <!-- Face buttons -->
+  <circle cx="356" cy="262" r="11" fill="#0e918c"/>
+  <circle cx="382" cy="288" r="11" fill="#0e918c"/>
+  <circle cx="356" cy="314" r="11" fill="#0e918c"/>
+  <circle cx="330" cy="288" r="11" fill="#0e918c"/>
+
+  <!-- Joysticks: rings, thicker than the line-art reference so they still
+       read once the icon is scaled down -->
+  <circle cx="203" cy="334" r="23" fill="#0e918c"/>
+  <circle cx="203" cy="334" r="11" fill="#3dd6cf"/>
+  <circle cx="309" cy="334" r="23" fill="#0e918c"/>
+  <circle cx="309" cy="334" r="11" fill="#3dd6cf"/>
+</svg>

@@ -52,15 +52,36 @@ winapp run .\target\release
 
 ## App icons
 
-`icon-sources/store-icon.svg` is the source of truth for the app icon. Everything in `Assets/` is generated from it and shouldn't be hand-edited.
+`icon-sources/` holds the two hand-drawn icons. Everything in `Assets/` is generated from them and shouldn't be hand-edited:
 
-Regenerate from Windows after changing the SVG. The [winapp CLI](https://github.com/microsoft/winappCli) reads the SVG directly and rewrites every image referenced in `Package.appxmanifest`, at all required sizes and scales, along with `Assets/app.ico`, which `build.rs` embeds into the exe:
+| Source | Generates | Used for |
+| --- | --- | --- |
+| `icon-sources/store-icon.svg` | `Assets/*.png` | Store listing and Windows app list |
+| `icon-sources/tray-icon.svg` | `Assets/app.ico` | The system tray icon, embedded into the exe by `build.rs` |
+
+The two differ only in the notification badge, which the Store icon has and the tray icon does not. In the notification area a badge reads as an unread notification from the app rather than as part of its logo, so the tray variant drops it, and shifts its viewBox down by 30 to recentre the artwork the badge used to balance.
+
+**Run the two steps below in order.** `winapp manifest update-assets` writes `Assets/app.ico` as well as the PNGs, so it replaces the tray icon with a badged one built from the Store source. Regenerating the tray icon afterwards puts the right one back. Running only the tray step is fine on its own.
+
+Regenerate the Store assets from Windows after changing `store-icon.svg`. The [winapp CLI](https://github.com/microsoft/winappCli) reads the SVG directly and rewrites every image referenced in `Package.appxmanifest`, at all required sizes and scales:
 
 ```
 winapp manifest update-assets icon-sources/store-icon.svg
 ```
 
-The committed assets were generated with winapp 0.5.0. Different versions rasterize the same SVG with slightly different antialiasing, so upgrading rewrites every generated image even when the SVG has not changed. That is expected rather than a problem: regenerate the full set, commit it in one go, and note the new version here so the next person knows what produced them.
+Regenerate the tray icon after changing `tray-icon.svg`, or after running the step above. This one needs `rsvg-convert` and ImageMagick, which are easiest to get from WSL (`sudo apt install librsvg2-bin imagemagick`):
+
+```sh
+for size in 16 24 32 48 256; do
+  rsvg-convert -w "$size" -h "$size" icon-sources/tray-icon.svg -o "/tmp/$size.png"
+done
+convert /tmp/16.png /tmp/24.png /tmp/32.png /tmp/48.png /tmp/256.png \
+  -background none -strip Assets/app.ico
+```
+
+Windows picks whichever of those five sizes fits the display scaling, so all of them need to be present. `-strip` keeps the output reproducible by dropping the timestamp ImageMagick would otherwise write into the 256px frame. Rebuild afterwards to embed the new icon, since `build.rs` only reruns when `Assets/app.ico` changes.
+
+The committed assets were generated with winapp 0.5.0 and ImageMagick 6.9. Different versions rasterize the same SVG with slightly different antialiasing, so upgrading either tool rewrites every generated image even when no SVG changed. That is expected rather than a problem: regenerate the full set, commit it in one go, and note the new version here so the next person knows what produced them.
 
 ## Privacy
 
