@@ -59,6 +59,10 @@ rsvg-convert -w 1024 -h 1024 Assets/icon.svg -o icon_source.png
 winapp manifest update-assets icon_source.png
 ```
 
+## Privacy
+
+PS Battery collects nothing and sends nothing — it has no network access at all. It does write a local diagnostic log you can read or delete yourself. See [PRIVACY.md](PRIVACY.md).
+
 ## Disclaimer
 
 I am a frontend/backend web developer. I have no prior experience building Windows applications or writing Rust code. Neither do I know anything about the PlayStation controller specifications. This has only been tested using my own controllers on my own Windows installation.
