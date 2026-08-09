@@ -31,7 +31,7 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 <img src="./images/tray.png" alt="Tray menu showing connected controllers" width="400" />
 
-## Why the percentage is a multiple of 10
+## Battery percentage
 
 PlayStation controllers report their battery as a 0-10 level, so the real charge is somewhere in a 10% range. The common approach, used by the Linux `hid-playstation` driver among others, is to report the middle of that range (level × 10 + 5)%. PS Battery shows the lower end of that range (level × 10)% because I would rather show too little remaining battery than too much. And round numbers are just prettier to look at in my opinion.
 
