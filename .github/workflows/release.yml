@@ -39,7 +39,7 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
-      id-token: write  # required by Cosign OIDC signing only
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -64,13 +64,16 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Run tests
+        run: cargo test --release --locked
+
       - name: Build release binary
-        run: cargo build --release
+        run: cargo build --release --locked
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
         with:
-          cosign-release: v2.4.1  # pin, update when upgrading
+          cosign-release: v2.4.1
 
       - name: Sign binary with Sigstore
         shell: pwsh
@@ -91,11 +94,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Builds the MSIX used for Microsoft Store submission. It is signed with a
-  # throwaway self-signed certificate purely so the package is well-formed,
-  # since the Store re-signs on ingestion. That cert is NOT trusted on
-  # end-user machines, so this package is uploaded as a workflow artifact for
-  # manual Partner Center submission, never as a public release asset.
+  # Signed with a throwaway cert the Store replaces on ingestion; not
+  # installable by end users, so artifact-only, never a release asset.
   build-msix:
     needs: release-please
     if: ${{ always() && (needs.release-please.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch') }}
@@ -105,10 +105,13 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: microsoft/setup-WinAppCli@v0.1  # pin, update when upgrading
+      - uses: microsoft/setup-WinAppCli@v0.1
+
+      - name: Run tests
+        run: cargo test --release --locked
 
       - name: Build release binary
-        run: cargo build --release
+        run: cargo build --release --locked
 
       - name: Stage package layout
         shell: pwsh
@@ -116,9 +119,6 @@ jobs:
           New-Item -ItemType Directory dist | Out-Null
           Copy-Item target/release/ps-battery.exe dist/
 
-      # MSIX requires a 4-part version; Cargo's is 3-part semver. Patched via
-      # the XML DOM rather than a regex, so it can't also hit the xml
-      # declaration or MinVersion/MaxVersionTested.
       - name: Set manifest version from Cargo.toml
         shell: pwsh
         run: |
