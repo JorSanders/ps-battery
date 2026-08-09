@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.2](https://github.com/JorSanders/ps-battery/compare/v1.21.1...v1.21.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* add missing logs and include error details in failure logs ([d7e5ca4](https://github.com/JorSanders/ps-battery/commit/d7e5ca40a2d7cc64f7c80e2f24ca5c7b608216bb))
+
 ## [1.21.1](https://github.com/JorSanders/ps-battery/compare/v1.21.0...v1.21.1) (2026-08-09)
 
 
