@@ -1,8 +1,7 @@
 use crate::log_err;
-use crate::ps_battery::show_error_message_box::show_error_message_box;
-use crate::ps_battery::tray::copy_str_to_utf16_buffer::copy_str_to_utf16_buffer;
+use crate::show_error_message_box::show_error_message_box;
+use crate::tray::copy_str_to_utf16_buffer::copy_str_to_utf16_buffer;
 
-pub mod autostart;
 pub mod copy_str_to_utf16_buffer;
 pub mod create_hidden_window;
 pub mod menu;
@@ -88,9 +87,7 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     match try_add_tray_icon(hwnd) {
         Some(notify) => notify,
         None => {
-            show_error_message_box(
-                "PS Battery could not set up its tray icon and will now close.",
-            );
+            show_error_message_box("PS Battery could not set up its tray icon and will now close.");
             std::process::exit(1);
         }
     }

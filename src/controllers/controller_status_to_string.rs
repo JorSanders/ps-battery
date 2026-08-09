@@ -1,4 +1,4 @@
-use crate::ps_battery::controller_store::ControllerStatus;
+use crate::controllers::controller_store::ControllerStatus;
 
 pub fn controller_status_to_string(status: &ControllerStatus) -> String {
     let mut line = format!(

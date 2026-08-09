@@ -7,18 +7,18 @@ use windows::Win32::UI::Shell::{NIM_DELETE, NOTIFYICONDATAW, Shell_NotifyIconW, 
 use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, DefWindowProcW, DestroyMenu, GetCursorPos, GetMenuItemCount,
     HMENU, KillTimer, MENU_ITEM_FLAGS, MF_BYPOSITION, MF_CHECKED, MF_GRAYED, MF_SEPARATOR,
-    MF_STRING, MF_UNCHECKED,
-    MSGF_MENU, PostQuitMessage, RegisterWindowMessageW, RemoveMenu, SW_SHOWNORMAL,
-    SetForegroundWindow, SetTimer, TPM_RIGHTBUTTON, TrackPopupMenu, WM_COMMAND, WM_ENTERIDLE,
-    WM_LBUTTONUP, WM_RBUTTONUP,
+    MF_STRING, MF_UNCHECKED, MSGF_MENU, PostQuitMessage, RegisterWindowMessageW, RemoveMenu,
+    SW_SHOWNORMAL, SetForegroundWindow, SetTimer, TPM_RIGHTBUTTON, TrackPopupMenu, WM_COMMAND,
+    WM_ENTERIDLE, WM_LBUTTONUP, WM_RBUTTONUP,
 };
 use windows::core::{PCWSTR, w};
 
-use super::{TRAY_ICON_ID, WM_TRAYICON, autostart, try_add_tray_icon};
-use crate::ps_battery::controller_status_to_string::controller_status_to_string;
-use crate::ps_battery::controller_store::{get_controllers, get_generation};
-use crate::ps_battery::logger::get_log_path;
-use crate::ps_battery::poll_controllers::{is_polling, request_poll};
+use super::{TRAY_ICON_ID, WM_TRAYICON, try_add_tray_icon};
+use crate::autostart;
+use crate::controllers::controller_status_to_string::controller_status_to_string;
+use crate::controllers::controller_store::{get_controllers, get_generation};
+use crate::controllers::poll_controllers::{is_polling, request_poll};
+use crate::logger::get_log_path;
 
 const MENU_ID_AUTOSTART: u16 = 1001;
 const MENU_ID_OPEN_LOG: u16 = 1002;

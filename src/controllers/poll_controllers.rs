@@ -1,7 +1,7 @@
-use crate::ps_battery::controller_store::{ControllerStatus, get_controllers, set_controllers};
-use crate::ps_battery::get_playstation_controllers::get_playstation_controllers;
-use crate::ps_battery::parse_battery_and_charging::parse_battery_and_charging;
-use crate::ps_battery::read_controller_input_report::{open_device, read_controller_input_report};
+use crate::controllers::controller_store::{ControllerStatus, get_controllers, set_controllers};
+use crate::controllers::get_playstation_controllers::get_playstation_controllers;
+use crate::controllers::parse_battery_and_charging::parse_battery_and_charging;
+use crate::controllers::read_controller_input_report::{open_device, read_controller_input_report};
 use crate::{log_err, log_info};
 use hidapi::HidApi;
 use std::sync::atomic::{AtomicBool, Ordering};

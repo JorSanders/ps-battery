@@ -1,7 +1,7 @@
 use crate::{log_err, log_info};
 use hidapi::HidDevice;
 
-use crate::ps_battery::get_playstation_controllers::{
+use crate::controllers::get_playstation_controllers::{
     DUALSENSE_EDGE_PRODUCT_ID, DUALSENSE_PRODUCT_ID, DUALSHOCK_GEN_1_PRODUCT_ID,
     DUALSHOCK_GEN_2_PRODUCT_ID,
 };

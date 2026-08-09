@@ -78,8 +78,8 @@ pub fn write_log(level: LogLevel, msg: &str) {
 #[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {
-        $crate::ps_battery::logger::write_log(
-            $crate::ps_battery::logger::LogLevel::Info,
+        $crate::logger::write_log(
+            $crate::logger::LogLevel::Info,
             &format!($($arg)*),
         )
     };
@@ -88,8 +88,8 @@ macro_rules! log_info {
 #[macro_export]
 macro_rules! log_err {
     ($($arg:tt)*) => {
-        $crate::ps_battery::logger::write_log(
-            $crate::ps_battery::logger::LogLevel::Error,
+        $crate::logger::write_log(
+            $crate::logger::LogLevel::Error,
             &format!($($arg)*),
         )
     };

@@ -1,4 +1,4 @@
-use crate::ps_battery::show_error_message_box::show_error_message_box;
+use crate::show_error_message_box::show_error_message_box;
 use crate::{log_err, log_info};
 use windows::Win32::Foundation::{HINSTANCE, HWND};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;

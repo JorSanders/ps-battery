@@ -1,4 +1,4 @@
-use crate::ps_battery::tray::copy_str_to_utf16_buffer::copy_str_to_utf16_buffer;
+use crate::tray::copy_str_to_utf16_buffer::copy_str_to_utf16_buffer;
 use crate::{log_err, log_info};
 use windows::Win32::UI::Shell::{
     NIF_INFO, NIIF_ERROR, NIIF_INFO, NIIF_WARNING, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW,

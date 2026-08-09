@@ -1,15 +1,11 @@
 use windows::Win32::UI::Shell::NOTIFYICONDATAW;
 
-use crate::{
-    log_info,
-    ps_battery::{
-        controller_status_to_string::controller_status_to_string,
-        controller_store::{ControllerStatus, get_controllers},
-        is_balloon_suppressed::is_balloon_suppressed,
-        play_sound::{AlertSound, play_sound},
-        tray::{BalloonIcon, show_balloon},
-    },
-};
+use crate::alerts::is_balloon_suppressed::is_balloon_suppressed;
+use crate::alerts::play_sound::{AlertSound, play_sound};
+use crate::controllers::controller_status_to_string::controller_status_to_string;
+use crate::controllers::controller_store::{ControllerStatus, get_controllers};
+use crate::log_info;
+use crate::tray::{BalloonIcon, show_balloon};
 
 const LOW_BATTERY_PERCENT: u8 = 20;
 const URGENT_BATTERY_PERCENT: u8 = 10;

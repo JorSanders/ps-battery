@@ -2,8 +2,8 @@ use crate::log_err;
 use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
 use windows::Win32::Foundation::ERROR_FILE_NOT_FOUND;
 use windows::Win32::System::Registry::{
-    HKEY, HKEY_CURRENT_USER, KEY_SET_VALUE, REG_SZ, RRF_RT_REG_SZ, RegCloseKey,
-    RegDeleteValueW, RegGetValueW, RegOpenKeyExW, RegSetValueExW,
+    HKEY, HKEY_CURRENT_USER, KEY_SET_VALUE, REG_SZ, RRF_RT_REG_SZ, RegCloseKey, RegDeleteValueW,
+    RegGetValueW, RegOpenKeyExW, RegSetValueExW,
 };
 use windows::core::PCWSTR;
 

@@ -1,11 +1,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod ps_battery;
-use crate::ps_battery::controller_store::get_generation;
-use crate::ps_battery::poll_controllers::{poll_controllers, wait_for_next_poll};
-use crate::ps_battery::send_controller_alerts::send_controller_alerts;
-use crate::ps_battery::show_error_message_box::show_error_message_box;
-use crate::ps_battery::tray::{add_tray_icon, create_hidden_window};
+mod alerts;
+mod autostart;
+mod controllers;
+mod logger;
+mod show_error_message_box;
+mod tray;
+
+use crate::alerts::send_controller_alerts::send_controller_alerts;
+use crate::controllers::controller_store::get_generation;
+use crate::controllers::poll_controllers::{poll_controllers, wait_for_next_poll};
+use crate::show_error_message_box::show_error_message_box;
+use crate::tray::{add_tray_icon, create_hidden_window};
 use hidapi::HidApi;
 use std::time::{Duration, Instant};
 use windows::Win32::UI::WindowsAndMessaging::{
@@ -15,8 +21,8 @@ use windows::Win32::UI::WindowsAndMessaging::{
 const ALERT_INTERVAL: Duration = Duration::from_secs(300);
 
 fn main() {
-    ps_battery::logger::init();
-    ps_battery::tray::autostart::init();
+    logger::init();
+    autostart::init();
 
     let hidden_window = create_hidden_window();
     let tray_icon = add_tray_icon(hidden_window);

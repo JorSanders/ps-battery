@@ -1,4 +1,4 @@
-use crate::ps_battery::request_controller_feature_report::request_controller_feature_report;
+use crate::controllers::request_controller_feature_report::request_controller_feature_report;
 use crate::{log_err, log_info};
 use hidapi::{DeviceInfo, HidApi, HidDevice};
 use std::time::Duration;
