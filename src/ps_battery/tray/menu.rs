@@ -1,25 +1,35 @@
 use crate::{log_err, log_info};
 use std::cell::RefCell;
+use std::sync::LazyLock;
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::InvalidateRect;
 use windows::Win32::UI::Shell::{NIM_DELETE, NOTIFYICONDATAW, Shell_NotifyIconW, ShellExecuteW};
 use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, DefWindowProcW, DestroyMenu, GetCursorPos, GetMenuItemCount,
-    HMENU, KillTimer, MF_BYPOSITION, MF_CHECKED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MF_UNCHECKED,
-    MSGF_MENU, PostQuitMessage, RemoveMenu, SW_SHOWNORMAL, SetForegroundWindow, SetTimer,
-    TPM_RIGHTBUTTON, TrackPopupMenu, WM_COMMAND, WM_ENTERIDLE, WM_LBUTTONUP, WM_RBUTTONUP,
+    HMENU, KillTimer, MENU_ITEM_FLAGS, MF_BYPOSITION, MF_CHECKED, MF_GRAYED, MF_SEPARATOR,
+    MF_STRING, MF_UNCHECKED,
+    MSGF_MENU, PostQuitMessage, RegisterWindowMessageW, RemoveMenu, SW_SHOWNORMAL,
+    SetForegroundWindow, SetTimer, TPM_RIGHTBUTTON, TrackPopupMenu, WM_COMMAND, WM_ENTERIDLE,
+    WM_LBUTTONUP, WM_RBUTTONUP,
 };
 use windows::core::{PCWSTR, w};
 
-use super::{TRAY_ICON_ID, WM_TRAYICON, autostart};
+use super::{TRAY_ICON_ID, WM_TRAYICON, autostart, try_add_tray_icon};
 use crate::ps_battery::controller_status_to_string::controller_status_to_string;
 use crate::ps_battery::controller_store::{get_controllers, get_generation};
 use crate::ps_battery::logger::get_log_path;
 use crate::ps_battery::poll_controllers::{is_polling, request_poll};
 
 const MENU_ID_AUTOSTART: u16 = 1001;
-const MENU_ID_OPEN_LOG: u16 = 1003;
-const MENU_ID_EXIT: u16 = 1;
+const MENU_ID_OPEN_LOG: u16 = 1002;
+const MENU_ID_EXIT: u16 = 1003;
+
+/// Explorer broadcasts this registered message when the taskbar is recreated
+/// after a crash or restart; every tray icon is gone then and must be
+/// re-added. Registration returns 0 on failure, which the window proc guards
+/// against because 0 is also `WM_NULL`.
+static TASKBAR_CREATED_MESSAGE: LazyLock<u32> =
+    LazyLock::new(|| unsafe { RegisterWindowMessageW(w!("TaskbarCreated")) });
 
 /// Ticks while the tray menu is open, so the menu keeps refreshing even when
 /// the mouse isn't moving. A `TIMERPROC` callback (rather than a plain
@@ -43,7 +53,11 @@ enum ScanStatus {
 
 impl ScanStatus {
     fn initial() -> Self {
-        if is_polling() { Self::Scanning } else { Self::NotStarted }
+        if is_polling() {
+            Self::Scanning
+        } else {
+            Self::NotStarted
+        }
     }
 
     fn next(self, currently_polling: bool) -> Self {
@@ -62,13 +76,35 @@ struct ActiveMenu {
     menu_hwnd: Option<HWND>,
     last_generation: u64,
     scan_status: ScanStatus,
-    /// Packaged builds resolve this on a worker thread, so it can change
+    /// Packaged builds resolve these on a worker thread, so they can change
     /// while the menu is open.
     last_autostart_enabled: bool,
+    last_autostart_available: bool,
 }
 
 thread_local! {
     static ACTIVE_MENU: RefCell<Option<ActiveMenu>> = const { RefCell::new(None) };
+}
+
+fn append_menu_item(menu: HMENU, flags: MENU_ITEM_FLAGS, item_id: u16, text: &str) {
+    let text_utf16: Vec<u16> = text.encode_utf16().chain(Some(0)).collect();
+    let result = unsafe {
+        AppendMenuW(
+            menu,
+            MF_STRING | flags,
+            item_id as usize,
+            PCWSTR(text_utf16.as_ptr()),
+        )
+    };
+    if result.is_err() {
+        log_err!("AppendMenuW failed for '{text}'");
+    }
+}
+
+fn append_menu_separator(menu: HMENU) {
+    if unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) }.is_err() {
+        log_err!("AppendMenuW separator failed");
+    }
 }
 
 fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
@@ -78,87 +114,43 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
         ScanStatus::Completed => Some("Scan completed"),
     };
     if let Some(status_text) = status_text {
-        let result = unsafe {
-            let status_text: Vec<u16> = status_text.encode_utf16().chain(Some(0)).collect();
-            AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(status_text.as_ptr()))
-        };
-        if result.is_err() {
-            log_err!("AppendMenuW failed");
-        }
+        append_menu_item(menu, MF_GRAYED, 0, status_text);
     }
 
     let controllers = get_controllers();
 
     for controller in &controllers {
-        let formatted = controller_status_to_string(controller);
-        let utf16: Vec<u16> = formatted.encode_utf16().chain(Some(0)).collect();
-        let result = unsafe { AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, PCWSTR(utf16.as_ptr())) };
-        if result.is_err() {
-            log_err!("AppendMenuW failed");
-        }
+        append_menu_item(menu, MF_GRAYED, 0, &controller_status_to_string(controller));
     }
 
     if controllers.is_empty() {
-        let result = unsafe {
-            let no_controllers_text: Vec<u16> = "No controllers connected"
-                .encode_utf16()
-                .chain(Some(0))
-                .collect();
-            AppendMenuW(
-                menu,
-                MF_STRING | MF_GRAYED,
-                0,
-                PCWSTR(no_controllers_text.as_ptr()),
-            )
-        };
-        if result.is_err() {
-            log_err!("AppendMenuW failed");
-        }
+        append_menu_item(menu, MF_GRAYED, 0, "No controllers connected");
     }
 
-    let result = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
-    if result.is_err() {
-        log_err!("AppendMenuW separator failed");
-    }
+    append_menu_separator(menu);
 
-    let autostart_enabled = autostart::is_enabled();
-    let autostart_text: Vec<u16> = "Run on startup".encode_utf16().chain(Some(0)).collect();
-    let autostart_state = if autostart_enabled {
+    let mut autostart_flags = if autostart::is_enabled() {
         MF_CHECKED
     } else {
         MF_UNCHECKED
     };
-    let result = unsafe {
-        AppendMenuW(
-            menu,
-            MF_STRING | autostart_state,
-            MENU_ID_AUTOSTART as usize,
-            PCWSTR(autostart_text.as_ptr()),
-        )
-    };
-    if result.is_err() {
-        log_err!("AppendMenuW autostart failed");
+    // A grayed item cannot be selected, so a toggle whose backend is gone
+    // never sends WM_COMMAND into the void.
+    if !autostart::is_available() {
+        autostart_flags |= MF_GRAYED;
     }
+    append_menu_item(menu, autostart_flags, MENU_ID_AUTOSTART, "Run on startup");
 
-    let result = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) };
-    if result.is_err() {
-        log_err!("AppendMenuW separator failed");
-    }
+    append_menu_separator(menu);
 
     let log_flags = if get_log_path().is_some() {
-        MF_STRING
+        MENU_ITEM_FLAGS(0)
     } else {
-        MF_STRING | MF_GRAYED
+        MF_GRAYED
     };
-    let result = unsafe { AppendMenuW(menu, log_flags, MENU_ID_OPEN_LOG as usize, w!("Open log")) };
-    if result.is_err() {
-        log_err!("AppendMenuW open log failed");
-    }
+    append_menu_item(menu, log_flags, MENU_ID_OPEN_LOG, "Open log");
 
-    let result = unsafe { AppendMenuW(menu, MF_STRING, MENU_ID_EXIT as usize, w!("Exit")) };
-    if result.is_err() {
-        log_err!("AppendMenuW exit failed");
-    }
+    append_menu_item(menu, MENU_ITEM_FLAGS(0), MENU_ID_EXIT, "Exit");
 }
 
 fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
@@ -178,28 +170,37 @@ fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
     }
 }
 
-/// Called both from the per-tick timer and from `WM_ENTERIDLE`.
 fn try_refresh_active_menu() {
     ACTIVE_MENU.with_borrow_mut(|active| {
         let Some(state) = active.as_mut() else { return };
-        let Some(menu_hwnd) = state.menu_hwnd else { return };
+        let Some(menu_hwnd) = state.menu_hwnd else {
+            return;
+        };
 
         let current_generation = get_generation();
         let new_status = state.scan_status.next(is_polling());
         let autostart_enabled = autostart::is_enabled();
+        let autostart_available = autostart::is_available();
         if current_generation != state.last_generation
             || new_status != state.scan_status
             || autostart_enabled != state.last_autostart_enabled
+            || autostart_available != state.last_autostart_available
         {
             refresh_menu(state.menu, menu_hwnd, new_status);
             state.last_generation = current_generation;
             state.scan_status = new_status;
             state.last_autostart_enabled = autostart_enabled;
+            state.last_autostart_available = autostart_available;
         }
     });
 }
 
-unsafe extern "system" fn menu_refresh_timer_proc(_hwnd: HWND, _msg: u32, _timer_id: usize, _time: u32) {
+unsafe extern "system" fn menu_refresh_timer_proc(
+    _hwnd: HWND,
+    _msg: u32,
+    _timer_id: usize,
+    _time: u32,
+) {
     try_refresh_active_menu();
 }
 
@@ -215,9 +216,6 @@ pub extern "system" fn window_proc(
         if lparam.0 as u32 == WM_RBUTTONUP || lparam.0 as u32 == WM_LBUTTONUP {
             log_info!("Tray menu opened");
 
-            // Kicks the polling thread awake via a condvar notify; the actual
-            // HID scan runs there, not on this (UI) thread, so it never
-            // blocks the menu from opening.
             request_poll();
             autostart::request_refresh();
 
@@ -238,6 +236,7 @@ pub extern "system" fn window_proc(
                     last_generation: get_generation(),
                     scan_status,
                     last_autostart_enabled: autostart::is_enabled(),
+                    last_autostart_available: autostart::is_available(),
                 });
             });
 
@@ -296,6 +295,11 @@ pub extern "system" fn window_proc(
                 log_err!("DestroyMenu failed");
             }
         }
+    } else if msg == *TASKBAR_CREATED_MESSAGE && msg != 0 {
+        log_info!("Taskbar recreated, re-adding the tray icon");
+        if try_add_tray_icon(hwnd).is_none() {
+            log_err!("Re-adding the tray icon after a taskbar restart failed");
+        }
     } else if msg == WM_ENTERIDLE {
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         if wparam.0 as u32 == MSGF_MENU {
@@ -314,7 +318,7 @@ pub extern "system" fn window_proc(
             MENU_ID_OPEN_LOG => {
                 if let Some(path) = get_log_path() {
                     let path_utf16: Vec<u16> = path.encode_utf16().chain(Some(0)).collect();
-                    unsafe {
+                    let result = unsafe {
                         ShellExecuteW(
                             None,
                             w!("open"),
@@ -324,14 +328,21 @@ pub extern "system" fn window_proc(
                             SW_SHOWNORMAL,
                         )
                     };
+                    // ShellExecuteW reports success as a value above 32.
+                    if result.0 as isize <= 32 {
+                        log_err!(
+                            "ShellExecuteW failed to open the log (code {})",
+                            result.0 as isize
+                        );
+                    }
                 }
             }
             MENU_ID_AUTOSTART => {
                 let result = if autostart::is_enabled() {
-                    log_info!("Autostart disabled");
+                    log_info!("Disabling autostart");
                     autostart::disable()
                 } else {
-                    log_info!("Autostart enabled");
+                    log_info!("Enabling autostart");
                     autostart::enable()
                 };
                 if !result {
