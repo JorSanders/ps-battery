@@ -7,7 +7,7 @@ edition = "2024"
 winresource = "0.1"
 
 [dependencies]
-hidapi = "2.6.3"
+hidapi = "2.6.6"
 windows ={ version = "0.62", features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Shell",
