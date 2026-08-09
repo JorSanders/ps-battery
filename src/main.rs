@@ -22,6 +22,7 @@ const ALERT_INTERVAL: Duration = Duration::from_secs(300);
 
 fn main() {
     logger::init();
+    log_info!("PS Battery v{} starting", env!("CARGO_PKG_VERSION"));
     autostart::init();
 
     let hidden_window = create_hidden_window();
@@ -59,6 +60,7 @@ fn main() {
         let mut msg = MSG::default();
         while unsafe { PeekMessageW(&raw mut msg, None, 0, 0, PM_REMOVE).as_bool() } {
             if msg.message == WM_QUIT {
+                log_info!("Received WM_QUIT, exiting");
                 return;
             }
             let _translated = unsafe { TranslateMessage(&raw const msg) };

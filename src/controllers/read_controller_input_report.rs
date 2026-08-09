@@ -57,6 +57,14 @@ pub fn read_controller_input_report(
             }
             log_info!("Discarding stale truncated report");
         }
+
+        if buffer_length > 0 && buffer[0] == TRUNCATED_BLUETOOTH_HEADER {
+            log_err!(
+                "Report still truncated after {} read attempts for '{}'",
+                REPORT_MODE_SWITCH_READ_ATTEMPTS,
+                device_name
+            );
+        }
     }
 
     buffer.truncate(buffer_length);

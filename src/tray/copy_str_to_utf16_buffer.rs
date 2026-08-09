@@ -1,3 +1,5 @@
+use crate::log_info;
+
 /// Fills `buffer` with `text` as NUL terminated UTF-16, truncating the text
 /// when it does not fit. Leftover bytes from a previous longer text may remain
 /// past the terminator; Windows stops reading at the NUL.
@@ -6,6 +8,13 @@ pub fn copy_str_to_utf16_buffer(text: &str, buffer: &mut [u16]) {
         return;
     }
     let text_utf16: Vec<u16> = text.encode_utf16().chain(Some(0)).collect();
+    if text_utf16.len() > buffer.len() {
+        log_info!(
+            "Text truncated to fit a buffer of {} UTF-16 units: '{}'",
+            buffer.len(),
+            text
+        );
+    }
     let copy_len = text_utf16.len().min(buffer.len());
     buffer[..copy_len].copy_from_slice(&text_utf16[..copy_len]);
     if copy_len == buffer.len() {

@@ -18,7 +18,12 @@ pub fn init() {
     }
     let path = format!("{dir}\\ps-battery.log");
     let old_path = format!("{dir}\\ps-battery.old.log");
-    let _ = std::fs::rename(&path, &old_path);
+    // A missing previous log just means this is the first run, but any other
+    // rotation failure is worth reporting once the new log file is open.
+    let rotate_error = match std::fs::rename(&path, &old_path) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => Some(e),
+        _ => None,
+    };
     match OpenOptions::new()
         .create(true)
         .write(true)
@@ -28,6 +33,9 @@ pub fn init() {
         Ok(file) => {
             let _ = LOG_PATH.set(path);
             let _ = LOG_FILE.set(Mutex::new(file));
+            if let Some(e) = rotate_error {
+                crate::log_err!("Rotating the previous log to '{old_path}' failed: {e}");
+            }
         }
         Err(e) => crate::log_err!("Failed to open log file '{path}': {e}"),
     }

@@ -34,7 +34,10 @@ pub fn create_hidden_window() -> HWND {
     unsafe {
         let result = RegisterClassW(&raw const window_class);
         if result == 0 {
-            log_err!("RegisterClassW failed");
+            log_err!(
+                "RegisterClassW failed: {}",
+                windows::core::Error::from_thread()
+            );
             show_error_message_box(
                 "PS Battery could not register its window class and will now close.",
             );

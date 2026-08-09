@@ -96,14 +96,14 @@ fn append_menu_item(menu: HMENU, flags: MENU_ITEM_FLAGS, item_id: u16, text: &st
             PCWSTR(text_utf16.as_ptr()),
         )
     };
-    if result.is_err() {
-        log_err!("AppendMenuW failed for '{text}'");
+    if let Err(e) = result {
+        log_err!("AppendMenuW failed for '{text}': {e}");
     }
 }
 
 fn append_menu_separator(menu: HMENU) {
-    if unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) }.is_err() {
-        log_err!("AppendMenuW separator failed");
+    if let Err(e) = unsafe { AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null()) } {
+        log_err!("AppendMenuW separator failed: {e}");
     }
 }
 
@@ -156,8 +156,8 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
 fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
     unsafe {
         while GetMenuItemCount(Some(menu)) > 0 {
-            if RemoveMenu(menu, 0, MF_BYPOSITION).is_err() {
-                log_err!("RemoveMenu failed");
+            if let Err(e) = RemoveMenu(menu, 0, MF_BYPOSITION) {
+                log_err!("RemoveMenu failed: {e}");
                 break;
             }
         }
@@ -263,7 +263,7 @@ pub extern "system" fn window_proc(
                 )
             };
             if timer_id == 0 {
-                log_err!("SetTimer failed");
+                log_err!("SetTimer failed: {}", windows::core::Error::from_thread());
             }
 
             // Blocks (running a nested message loop on this thread) until the
@@ -281,18 +281,20 @@ pub extern "system" fn window_proc(
                 )
             };
             if !popup.as_bool() {
-                log_err!("TrackPopupMenu failed");
+                log_err!(
+                    "TrackPopupMenu failed: {}",
+                    windows::core::Error::from_thread()
+                );
             }
 
-            if unsafe { KillTimer(Some(hwnd), MENU_REFRESH_TIMER_ID) }.is_err() {
-                log_err!("KillTimer failed");
+            if let Err(e) = unsafe { KillTimer(Some(hwnd), MENU_REFRESH_TIMER_ID) } {
+                log_err!("KillTimer failed: {e}");
             }
 
             ACTIVE_MENU.with_borrow_mut(|active| *active = None);
 
-            let result = unsafe { DestroyMenu(menu) };
-            if result.is_err() {
-                log_err!("DestroyMenu failed");
+            if let Err(e) = unsafe { DestroyMenu(menu) } {
+                log_err!("DestroyMenu failed: {e}");
             }
         }
     } else if msg == *TASKBAR_CREATED_MESSAGE && msg != 0 {
@@ -317,6 +319,7 @@ pub extern "system" fn window_proc(
         match wparam.0 as u16 {
             MENU_ID_OPEN_LOG => {
                 if let Some(path) = get_log_path() {
+                    log_info!("Opening the log file");
                     let path_utf16: Vec<u16> = path.encode_utf16().chain(Some(0)).collect();
                     let result = unsafe {
                         ShellExecuteW(

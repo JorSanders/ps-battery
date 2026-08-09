@@ -17,7 +17,7 @@ fn to_wide(text: &str) -> Vec<u16> {
 pub fn is_enabled() -> bool {
     let subkey = to_wide(RUN_SUBKEY);
     let name = to_wide(APP_NAME);
-    unsafe {
+    let status = unsafe {
         RegGetValueW(
             HKEY_CURRENT_USER,
             PCWSTR(subkey.as_ptr()),
@@ -27,8 +27,15 @@ pub fn is_enabled() -> bool {
             None,
             None,
         )
-        .is_ok()
+    };
+    // A value that does not exist means autostart is off, so only other
+    // errors are unexpected.
+    if let Err(e) = status.ok()
+        && status != ERROR_FILE_NOT_FOUND
+    {
+        log_err!("RegGetValueW for the autostart entry failed: {e}");
     }
+    status.is_ok()
 }
 
 pub fn enable() -> bool {
