@@ -1,6 +1,6 @@
 use crate::{log_err, log_info};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Condvar, Mutex, OnceLock};
+use std::sync::{Condvar, Mutex};
 use windows::ApplicationModel::{StartupTask, StartupTaskState};
 use windows::Win32::System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize};
 use windows::core::HSTRING;
@@ -10,7 +10,10 @@ use windows::core::HSTRING;
 const TASK_ID: &str = "PsBatteryAutostart";
 
 static IS_ENABLED: AtomicBool = AtomicBool::new(false);
-static PENDING_REQUEST: OnceLock<(Mutex<Option<Request>>, Condvar)> = OnceLock::new();
+/// False until the worker has resolved the `StartupTask`, and stays false
+/// when that fails, so the menu can gray out a toggle that would go nowhere.
+static IS_WORKER_AVAILABLE: AtomicBool = AtomicBool::new(false);
+static PENDING_REQUEST: (Mutex<Option<Request>>, Condvar) = (Mutex::new(None), Condvar::new());
 
 #[derive(Clone, Copy)]
 enum Request {
@@ -19,18 +22,18 @@ enum Request {
     Refresh,
 }
 
-fn pending_request() -> &'static (Mutex<Option<Request>>, Condvar) {
-    PENDING_REQUEST.get_or_init(|| (Mutex::new(None), Condvar::new()))
-}
-
 fn send(request: Request) {
-    let (lock, condvar) = pending_request();
+    let (lock, condvar) = &PENDING_REQUEST;
     *lock.lock().expect("autostart request poisoned") = Some(request);
     condvar.notify_one();
 }
 
 pub fn is_enabled() -> bool {
     IS_ENABLED.load(Ordering::Acquire)
+}
+
+pub fn is_available() -> bool {
+    IS_WORKER_AVAILABLE.load(Ordering::Acquire)
 }
 
 pub fn enable() {
@@ -60,18 +63,20 @@ pub fn start_worker() {
 
         let Some(task) = resolve_task() else { return };
         refresh_cached_state(&task);
+        IS_WORKER_AVAILABLE.store(true, Ordering::Release);
 
-        let (lock, condvar) = pending_request();
+        let (lock, condvar) = &PENDING_REQUEST;
         loop {
             let request = {
                 let mut guard = lock.lock().expect("autostart request poisoned");
-                while guard.is_none() {
+                loop {
+                    if let Some(request) = guard.take() {
+                        break request;
+                    }
                     guard = condvar.wait(guard).expect("autostart condvar wait failed");
                 }
-                guard.take()
             };
 
-            let Some(request) = request else { continue };
             match request {
                 Request::Enable => request_enable(&task),
                 Request::Disable => {

@@ -1,7 +1,7 @@
 mod registry;
 mod startup_task;
 
-use crate::log_info;
+use crate::{log_err, log_info};
 use std::sync::OnceLock;
 use windows::Win32::Foundation::APPMODEL_ERROR_NO_PACKAGE;
 use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName;
@@ -25,6 +25,11 @@ pub fn init() {
         startup_task::start_worker();
     } else {
         log_info!("Autostart backend: registry (unpackaged)");
+        // The entry goes stale when the exe moves; rewriting it on every
+        // start keeps it pointing at whichever copy actually runs.
+        if registry::is_enabled() && !registry::enable() {
+            log_err!("Refreshing the autostart entry at startup failed");
+        }
     }
 }
 
@@ -41,6 +46,14 @@ pub fn is_enabled() -> bool {
         startup_task::is_enabled()
     } else {
         registry::is_enabled()
+    }
+}
+
+pub fn is_available() -> bool {
+    if is_packaged() {
+        startup_task::is_available()
+    } else {
+        true
     }
 }
 
