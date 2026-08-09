@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.21.1](https://github.com/JorSanders/ps-battery/compare/v1.21.0...v1.21.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* alert at the right moments and through the right channel ([27c2880](https://github.com/JorSanders/ps-battery/commit/27c2880255b975a782c994b37bdf8f2a8810d4a0))
+* keep a controller listed while its reads hiccup ([3779ad1](https://github.com/JorSanders/ps-battery/commit/3779ad1183085cac4e3387731538a215553752cf))
+* make the autostart toggle resilient ([aafc815](https://github.com/JorSanders/ps-battery/commit/aafc815d4279a02ad46711fe051741ddaf9a0a7a))
+* read battery reports correctly and reliably ([8573733](https://github.com/JorSanders/ps-battery/commit/85737332a5facbcaf132a982a1a677b50864d016))
+* show fatal startup errors instead of quitting silently ([ef1b89b](https://github.com/JorSanders/ps-battery/commit/ef1b89b50056c99310aab92d7fcfbe8021b1fb5a))
+* survive Explorer restarts and stop balloons mutating the tray icon ([9bcf513](https://github.com/JorSanders/ps-battery/commit/9bcf513c91b094970970371368429d29da8123cc))
+
 ## [1.21.0](https://github.com/JorSanders/ps-battery/compare/v1.20.0...v1.21.0) (2026-08-07)
 
 
