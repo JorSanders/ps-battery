@@ -1,15 +1,18 @@
 use crate::log_err;
+use crate::ps_battery::show_error_message_box::show_error_message_box;
+use crate::ps_battery::tray::copy_str_to_utf16_buffer::copy_str_to_utf16_buffer;
 
 pub mod autostart;
+pub mod copy_str_to_utf16_buffer;
 pub mod create_hidden_window;
 pub mod menu;
 pub mod show_balloon;
 
 use windows::Win32::Foundation::HWND;
-use windows::Win32::UI::Shell::{
-    NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIS_HIDDEN, NOTIFYICONDATAW, Shell_NotifyIconW,
-};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::UI::Shell::{
+    NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NOTIFYICONDATAW, Shell_NotifyIconW,
+};
 use windows::Win32::UI::WindowsAndMessaging::{HICON, IDI_APPLICATION, LoadIconW};
 use windows::core::PCWSTR;
 
@@ -30,7 +33,12 @@ fn load_app_icon() -> Option<HICON> {
             return None;
         }
     };
-    match unsafe { LoadIconW(Some(module.into()), PCWSTR(APP_ICON_RESOURCE_ID as *const u16)) } {
+    match unsafe {
+        LoadIconW(
+            Some(module.into()),
+            PCWSTR(APP_ICON_RESOURCE_ID as *const u16),
+        )
+    } {
         Ok(icon) => Some(icon),
         Err(e) => {
             log_err!("Loading the embedded app icon failed: {e}");
@@ -39,14 +47,11 @@ fn load_app_icon() -> Option<HICON> {
     }
 }
 
-pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
+/// Returns `None` when the icon could not be added, so the caller decides
+/// whether that is fatal (startup) or retryable (the taskbar was recreated).
+pub fn try_add_tray_icon(hwnd: HWND) -> Option<NOTIFYICONDATAW> {
     let mut sz_tip = [0u16; 128];
-    let tip_utf16 = TRAY_TIP_TEXT.encode_utf16().collect::<Vec<_>>();
-    let tip_len = tip_utf16.len().min(sz_tip.len());
-    sz_tip[..tip_len].copy_from_slice(&tip_utf16[..tip_len]);
-    if tip_len == sz_tip.len() {
-        sz_tip[tip_len - 1] = 0;
-    }
+    copy_str_to_utf16_buffer(TRAY_TIP_TEXT, &mut sz_tip);
 
     let h_icon = match load_app_icon() {
         Some(icon) => icon,
@@ -54,7 +59,7 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
             Ok(icon) => icon,
             Err(e) => {
                 log_err!("LoadIconW failed: {e}");
-                std::process::exit(1);
+                return None;
             }
         },
     };
@@ -65,7 +70,6 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
         uID: TRAY_ICON_ID,
         uFlags: NIF_MESSAGE | NIF_ICON | NIF_TIP,
         uCallbackMessage: WM_TRAYICON,
-        dwState: NIS_HIDDEN,
         szTip: sz_tip,
         hIcon: h_icon,
         ..Default::default()
@@ -74,10 +78,22 @@ pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
     let result = unsafe { Shell_NotifyIconW(NIM_ADD, &raw const notify) };
     if !result.as_bool() {
         log_err!("Shell_NotifyIconW NIM_ADD failed, tray icon could not be created");
-        std::process::exit(1);
+        return None;
     }
 
-    notify
+    Some(notify)
+}
+
+pub fn add_tray_icon(hwnd: HWND) -> NOTIFYICONDATAW {
+    match try_add_tray_icon(hwnd) {
+        Some(notify) => notify,
+        None => {
+            show_error_message_box(
+                "PS Battery could not set up its tray icon and will now close.",
+            );
+            std::process::exit(1);
+        }
+    }
 }
 
 pub use create_hidden_window::create_hidden_window;

@@ -1,12 +1,13 @@
 pub mod controller_status_to_string;
 pub mod controller_store;
 pub mod get_playstation_controllers;
-pub mod is_dnd_active;
+pub mod is_balloon_suppressed;
 pub mod logger;
 pub mod parse_battery_and_charging;
 pub mod play_sound;
 pub mod poll_controllers;
 pub mod read_controller_input_report;
+pub mod request_controller_feature_report;
 pub mod send_controller_alerts;
-pub mod send_controller_feature_report;
+pub mod show_error_message_box;
 pub mod tray;
