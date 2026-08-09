@@ -31,52 +31,49 @@ I was so annoyed by my PlayStation controllers running out of battery without wa
 
 <img src="./images/tray.png" alt="Tray menu showing connected controllers" width="400" />
 
-## Microsoft Store
+## Download
 
-The app has been submitted to the Microsoft Store and will be downloadable there once it passes certification. The direct `.exe` download stays available either way, and both are the same app.
+Two options, same app:
 
-The only real reason to prefer the Store is trust. The `.exe` here is unsigned, so Windows shows an "Unknown publisher" warning before it will run. Getting rid of that warning means buying a code signing certificate, which costs a few hundred euros a year, and this is a free weekend project. The Store signs the package itself, so the warning goes away without me paying for a certificate.
+- **[GitHub releases](https://github.com/JorSanders/ps-battery/releases/latest)**: download `ps-battery.exe`. The exe is unsigned (a code signing certificate costs a few hundred euros a year, and this is a free hobby project), so Windows shows an "Unknown publisher" warning. Every release also includes `ps-battery.exe.bundle`, a Sigstore signature created by the release workflow, so you can verify the exe was built by this repository's CI using [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
 
-## Microsoft Store packaging
+  ```powershell
+  cosign verify-blob ps-battery.exe --bundle ps-battery.exe.bundle --certificate-identity-regexp "^https://github.com/JorSanders/ps-battery/" --certificate-oidc-issuer https://token.actions.githubusercontent.com
+  ```
 
-The app is packaged as an MSIX for that submission.
+- **Microsoft Store**: submitted and currently under review. Once it passes certification the app is downloadable there without any warning, since the Store signs the package itself.
 
-Every release builds the MSIX and uploads it as a **workflow artifact** rather than a release asset, because it is signed with a throwaway self-signed certificate that end users do not trust. The Store re-signs it on submission.
+## Local release build
 
-Requires the [winapp CLI](https://github.com/microsoft/winappCli) (`winget install microsoft.winappcli`):
+Requires the [winapp CLI](https://github.com/microsoft/winappCli) (`winget install microsoft.winappcli`); `winapp run` needs Windows Developer Mode.
 
-```
-cargo build --release                                  # build the exe
-mkdir dist && copy target\release\ps-battery.exe dist\  # stage the layout
-winapp pack ./dist --manifest Package.appxmanifest --generate-cert
-```
+Build, then run with package identity:
 
-To run locally with real package identity (requires Windows Developer Mode; no signing needed):
-
-```
+```powershell
+cargo build --release --locked
 winapp run .\target\release
 ```
 
-## App icons
+Test that the MSIX packs. The output is not runnable because it uses an untrusted throwaway certificate. For Microsoft Store uploads I use the CI workflow artifact:
 
-`icon-sources/` holds the two hand-drawn icons. Everything in `Assets/` is generated from them and shouldn't be hand-edited:
-
-| Source | Generates | Used for |
-| --- | --- | --- |
-| `icon-sources/store-icon.svg` | `Assets/*.png` | Store listing and Windows app list |
-| `icon-sources/tray-icon.svg` | `Assets/app.ico` | The system tray icon, embedded into the exe by `build.rs` |
-
-The two differ only in the notification badge, which the Store icon has and the tray icon does not. In the notification area a badge reads as an unread notification from the app rather than as part of its logo, so the tray variant drops it, and shifts its viewBox down by 30 to recentre the artwork the badge used to balance.
-
-**Run the two steps below in order.** `winapp manifest update-assets` writes `Assets/app.ico` as well as the PNGs, so it replaces the tray icon with a badged one built from the Store source. Regenerating the tray icon afterwards puts the right one back. Running only the tray step is fine on its own.
-
-Regenerate the Store assets from Windows after changing `store-icon.svg`. The [winapp CLI](https://github.com/microsoft/winappCli) reads the SVG directly and rewrites every image referenced in `Package.appxmanifest`, at all required sizes and scales:
-
+```powershell
+cargo build --release --locked
+mkdir dist -Force | Out-Null
+copy target\release\ps-battery.exe dist\
+winapp pack ./dist --manifest Package.appxmanifest --generate-cert
 ```
+
+## Regenerating icons
+
+`icon-sources\` holds the sources; everything in `Assets\` is generated. Run both steps in this order, because the first also overwrites `Assets/app.ico` with a badged icon the tray should not use:
+
+The Store PNGs, after changing `store-icon.svg`:
+
+```powershell
 winapp manifest update-assets icon-sources/store-icon.svg
 ```
 
-Regenerate the tray icon after changing `tray-icon.svg`, or after running the step above. This one needs `rsvg-convert` and ImageMagick, which are easiest to get from WSL (`sudo apt install librsvg2-bin imagemagick`):
+The tray icon, from WSL (`sudo apt install librsvg2-bin imagemagick`):
 
 ```sh
 for size in 16 24 32 48 256; do
@@ -86,9 +83,7 @@ convert /tmp/16.png /tmp/24.png /tmp/32.png /tmp/48.png /tmp/256.png \
   -background none -strip Assets/app.ico
 ```
 
-Windows picks whichever of those five sizes fits the display scaling, so all of them need to be present. `-strip` keeps the output reproducible by dropping the timestamp ImageMagick would otherwise write into the 256px frame. Rebuild afterwards to embed the new icon, since `build.rs` only reruns when `Assets/app.ico` changes.
-
-The committed assets were generated with winapp 0.5.0 and ImageMagick 6.9. Different versions rasterize the same SVG with slightly different antialiasing, so upgrading either tool rewrites every generated image even when no SVG changed. That is expected rather than a problem: regenerate the full set, commit it in one go, and note the new version here so the next person knows what produced them.
+Rebuild afterwards so `build.rs` embeds the new `app.ico`.
 
 ## Privacy
 
@@ -100,4 +95,4 @@ I am a frontend/backend web developer. I have no prior experience building Windo
 
 ## Any issues?
 
-This has been an awesome weekend project. If you have any issues, feel free to open a GitHub issue or contact me. Otherwise, this code is unlicensed, so do whatever you want with it: https://unlicense.org/
+This is an awesome hobby project I have spent quite some hours on. If you have any issues, feel free to open a GitHub issue or contact me. Otherwise, this code is unlicensed, so do whatever you want with it: https://unlicense.org/

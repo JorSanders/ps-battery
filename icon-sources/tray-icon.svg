@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 30 512 512" width="512" height="512">
-  <!-- The tray variant of Assets/icon.svg, without the notification badge: in
-       the notification area a badge reads as an unread notification from the
-       app rather than as part of its logo. The Store assets keep the badge.
-       The viewBox is shifted down by 30 so the artwork, which the badge used
-       to balance in the top right, sits centred on its own. -->
+  <!-- Tray variant of the store icon: no notification badge, viewBox shifted
+       down 30 to keep the artwork centred without it -->
 
   <!-- Battery: outlined body with level segments inside -->
   <rect x="232" y="106" width="48" height="24" rx="8" fill="#f06aa5"/>
@@ -14,9 +11,7 @@
   <rect x="192" y="311" width="128" height="56" rx="10" fill="#f06aa5"/>
   <rect x="192" y="385" width="128" height="56" rx="10" fill="#f06aa5"/>
 
-  <!-- Controller: DualSense silhouette. Widest at the foot of the grips,
-       which flare outward as they descend, with L1/R1 tabs at the
-       shoulders. -->
+  <!-- Controller: DualSense silhouette with L1/R1 shoulder tabs -->
   <rect x="138" y="224" width="44" height="30" rx="11" fill="#3dd6cf"/>
   <rect x="330" y="224" width="44" height="30" rx="11" fill="#3dd6cf"/>
   <path d="M 165 234
@@ -46,8 +41,7 @@
   <circle cx="356" cy="314" r="11" fill="#0e918c"/>
   <circle cx="330" cy="288" r="11" fill="#0e918c"/>
 
-  <!-- Joysticks: rings, thicker than the line-art reference so they still
-       read once the icon is scaled down -->
+  <!-- Joysticks -->
   <circle cx="203" cy="334" r="23" fill="#0e918c"/>
   <circle cx="203" cy="334" r="11" fill="#3dd6cf"/>
   <circle cx="309" cy="334" r="23" fill="#0e918c"/>
