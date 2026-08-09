@@ -1,5 +1,5 @@
+use std::sync::RwLock;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{OnceLock, RwLock};
 
 #[derive(Clone)]
 #[allow(clippy::struct_excessive_bools)]
@@ -13,23 +13,19 @@ pub struct ControllerStatus {
     pub last_read_failed: bool,
     pub unexpected_battery_data: bool,
 }
-static CONTROLLERS: OnceLock<RwLock<Vec<ControllerStatus>>> = OnceLock::new();
+static CONTROLLERS: RwLock<Vec<ControllerStatus>> = RwLock::new(Vec::new());
 
 /// Bumped every time `set_controllers` runs, so callers can cheaply detect
 /// whether a poll has completed since they last read the store.
 static GENERATION: AtomicU64 = AtomicU64::new(0);
 
 pub fn set_controllers(status: Vec<ControllerStatus>) {
-    *CONTROLLERS
-        .get_or_init(|| RwLock::new(Vec::new()))
-        .write()
-        .expect("controller store poisoned") = status;
+    *CONTROLLERS.write().expect("controller store poisoned") = status;
     GENERATION.fetch_add(1, Ordering::Release);
 }
 
 pub fn get_controllers() -> Vec<ControllerStatus> {
     CONTROLLERS
-        .get_or_init(|| RwLock::new(Vec::new()))
         .read()
         .expect("controller store poisoned")
         .clone()

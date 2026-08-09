@@ -22,14 +22,14 @@ pub fn get_playstation_controllers(hid_api: &mut HidApi) -> Vec<DeviceInfo> {
     }
     log_info!("Refreshed hidapi devices");
 
-    let devices: Vec<DeviceInfo> = hid_api.device_list().cloned().collect();
-    log_info!("hid device count {}", devices.len());
+    log_info!("hid device count {}", hid_api.device_list().count());
 
-    let controllers: Vec<DeviceInfo> = devices
-        .into_iter()
+    let controllers: Vec<DeviceInfo> = hid_api
+        .device_list()
         .filter(|device| {
             device.vendor_id() == SONY_VENDOR_ID && SONY_PRODUCT_IDS.contains(&device.product_id())
         })
+        .cloned()
         .collect();
 
     log_info!("controller count {}", controllers.len());
