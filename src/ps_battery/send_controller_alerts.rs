@@ -4,49 +4,62 @@ use crate::{
     log_info,
     ps_battery::{
         controller_status_to_string::controller_status_to_string,
-        controller_store::get_controllers,
-        is_dnd_active::is_dnd_active,
+        controller_store::{ControllerStatus, get_controllers},
+        is_balloon_suppressed::is_balloon_suppressed,
         play_sound::{AlertSound, play_sound},
         tray::{BalloonIcon, show_balloon},
     },
 };
 
-pub fn send_controller_alerts(tray_icon: &mut NOTIFYICONDATAW) -> u8 {
-    let controllers = get_controllers();
-    let dnd = is_dnd_active();
+const LOW_BATTERY_PERCENT: u8 = 20;
+const URGENT_BATTERY_PERCENT: u8 = 10;
+const EMPTY_BATTERY_PERCENT: u8 = 0;
 
-    let mut alerts_sent: u8 = 0;
-    for controller_status in controllers {
-        if controller_status.battery_percent > 20
-            || !controller_status.is_bluetooth
-            || controller_status.is_fully_charged
-            || controller_status.is_charging
-        {
-            continue;
-        }
-        alerts_sent += 1;
+fn is_low_on_battery(controller_status: &ControllerStatus) -> bool {
+    controller_status.battery_percent <= LOW_BATTERY_PERCENT
+        && controller_status.is_bluetooth
+        && !controller_status.is_fully_charged
+        && !controller_status.is_charging
+        // A reading the parser could not make sense of says nothing about the
+        // battery, and the level that came with it is as likely to be noise.
+        && !controller_status.unexpected_battery_data
+}
 
-        let (sound, icon) = if controller_status.battery_percent == 0 {
-            (AlertSound::Critical, BalloonIcon::Error)
-        } else if controller_status.battery_percent <= 10 {
-            (AlertSound::Exclamation, BalloonIcon::Warning)
-        } else {
-            (AlertSound::Notify, BalloonIcon::Info)
-        };
+pub fn send_controller_alerts(tray_icon: &NOTIFYICONDATAW) -> bool {
+    // Every balloon replaces the previous one on the same tray icon, so
+    // alerting per controller would leave only the last one readable.
+    let Some(controller_status) = get_controllers()
+        .into_iter()
+        .filter(is_low_on_battery)
+        .min_by_key(|controller_status| controller_status.battery_percent)
+    else {
+        return false;
+    };
 
-        log_info!("Sending alert. DND active: {}", dnd);
+    let (sound, icon) = if controller_status.battery_percent == EMPTY_BATTERY_PERCENT {
+        (AlertSound::Critical, BalloonIcon::Error)
+    } else if controller_status.battery_percent <= URGENT_BATTERY_PERCENT {
+        (AlertSound::Exclamation, BalloonIcon::Warning)
+    } else {
+        (AlertSound::Notify, BalloonIcon::Info)
+    };
 
-        if dnd {
-            play_sound(sound);
-        }
+    let balloon_suppressed = is_balloon_suppressed();
+    log_info!("Sending alert. Balloon suppressed: {}", balloon_suppressed);
 
-        show_balloon(
-            tray_icon,
-            &format!("PS controller {}% battery", controller_status.battery_percent),
-            &controller_status_to_string(&controller_status),
-            icon,
-        );
+    if balloon_suppressed {
+        play_sound(sound);
     }
 
-    alerts_sent
+    show_balloon(
+        tray_icon,
+        &format!(
+            "PS controller {}% battery",
+            controller_status.battery_percent
+        ),
+        &controller_status_to_string(&controller_status),
+        icon,
+    );
+
+    true
 }

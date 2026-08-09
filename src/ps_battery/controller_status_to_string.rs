@@ -19,7 +19,7 @@ pub fn controller_status_to_string(status: &ControllerStatus) -> String {
         } else if status.is_charging {
             "Charging"
         } else {
-            "Not Charging"
+            "Not charging"
         }
     );
 
