@@ -1,0 +1,15 @@
+# open-pull-requests-limit 0 turns off routine version-update PRs; Dependabot
+# then only opens PRs for security advisories.
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
