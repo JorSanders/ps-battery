@@ -26,16 +26,14 @@ pub fn show_balloon(notify: &NOTIFYICONDATAW, title: &str, message: &str, icon: 
         BalloonIcon::Error => NIIF_ERROR,
     };
 
-    unsafe {
-        let result = Shell_NotifyIconW(NIM_MODIFY, &raw const balloon);
-        if result.as_bool() {
-            log_info!("Balloon sent. Title: '{}' Message: '{}'", title, message);
-        } else {
-            log_err!(
-                "Shell_NotifyIconW NIM_MODIFY failed. Title: '{}' Message: '{}'",
-                title,
-                message
-            );
-        }
+    let result = unsafe { Shell_NotifyIconW(NIM_MODIFY, &raw const balloon) };
+    if result.as_bool() {
+        log_info!("Balloon sent. Title: '{}' Message: '{}'", title, message);
+    } else {
+        log_err!(
+            "Shell_NotifyIconW NIM_MODIFY failed. Title: '{}' Message: '{}'",
+            title,
+            message
+        );
     }
 }

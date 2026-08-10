@@ -31,19 +31,19 @@ pub fn create_hidden_window() -> HWND {
         style: CS_HREDRAW | CS_VREDRAW,
         ..Default::default()
     };
-    unsafe {
-        let result = RegisterClassW(&raw const window_class);
-        if result == 0 {
-            log_err!(
-                "RegisterClassW failed: {}",
-                windows::core::Error::from_thread()
-            );
-            show_error_message_box(
-                "PS Battery could not register its window class and will now close.",
-            );
-            std::process::exit(1);
-        }
-        let hidden_window = match CreateWindowExW(
+    let result = unsafe { RegisterClassW(&raw const window_class) };
+    if result == 0 {
+        log_err!(
+            "RegisterClassW failed: {}",
+            windows::core::Error::from_thread()
+        );
+        show_error_message_box(
+            "PS Battery could not register its window class and will now close.",
+        );
+        std::process::exit(1);
+    }
+    let hidden_window = match unsafe {
+        CreateWindowExW(
             WINDOW_EX_STYLE(0),
             &class_name,
             &HSTRING::from(""),
@@ -56,17 +56,17 @@ pub fn create_hidden_window() -> HWND {
             None,
             Some(module),
             None,
-        ) {
-            Ok(window) => window,
-            Err(e) => {
-                log_err!("CreateWindowExW failed: {e}");
-                show_error_message_box(
-                    "PS Battery could not create its message window and will now close.",
-                );
-                std::process::exit(1);
-            }
-        };
-        log_info!("Created hidden window");
-        hidden_window
-    }
+        )
+    } {
+        Ok(window) => window,
+        Err(e) => {
+            log_err!("CreateWindowExW failed: {e}");
+            show_error_message_box(
+                "PS Battery could not create its message window and will now close.",
+            );
+            std::process::exit(1);
+        }
+    };
+    log_info!("Created hidden window");
+    hidden_window
 }

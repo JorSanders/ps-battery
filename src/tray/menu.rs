@@ -154,12 +154,10 @@ fn populate_menu(menu: HMENU, scan_status: ScanStatus) {
 }
 
 fn refresh_menu(menu: HMENU, menu_hwnd: HWND, scan_status: ScanStatus) {
-    unsafe {
-        while GetMenuItemCount(Some(menu)) > 0 {
-            if let Err(e) = RemoveMenu(menu, 0, MF_BYPOSITION) {
-                log_err!("RemoveMenu failed: {e}");
-                break;
-            }
+    while unsafe { GetMenuItemCount(Some(menu)) } > 0 {
+        if let Err(e) = unsafe { RemoveMenu(menu, 0, MF_BYPOSITION) } {
+            log_err!("RemoveMenu failed: {e}");
+            break;
         }
     }
 
@@ -195,12 +193,7 @@ fn try_refresh_active_menu() {
     });
 }
 
-unsafe extern "system" fn menu_refresh_timer_proc(
-    _hwnd: HWND,
-    _msg: u32,
-    _timer_id: usize,
-    _time: u32,
-) {
+extern "system" fn menu_refresh_timer_proc(_hwnd: HWND, _msg: u32, _timer_id: usize, _time: u32) {
     try_refresh_active_menu();
 }
 

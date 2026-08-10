@@ -9,4 +9,6 @@
 - The information in the README.md must always be up to date.
 - Any images should be cleaned of their metadata before committing.
 - Always handle every error case
+- Don't use unsafe unless absolutely needed
+  - For unsafe usage keep the scope as minimal as possible
 - Never add - em dashes in text
