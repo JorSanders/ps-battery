@@ -39,13 +39,19 @@ PlayStation controllers report their battery as a 0-10 level, so the real charge
 
 Two options, same app:
 
-- **[GitHub releases](https://github.com/JorSanders/ps-battery/releases/latest)**: download `ps-battery.exe`. The exe is unsigned (a code signing certificate costs a few hundred euros a year, and this is a free hobby project), so Windows shows an "Unknown publisher" warning. Every release also includes `ps-battery.exe.bundle`, a Sigstore signature created by the release workflow, so you can verify the exe was built by this repository's CI using [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
+- **[Microsoft Store](https://apps.microsoft.com/store/detail/9N6SB6F43C2N?cid=DevShareMCLPCS)**: the easiest and safest option. It passed Microsoft's certification and installs without the SmartScreen warning the direct exe download shows.
 
-  ```powershell
-  cosign verify-blob ps-battery.exe --bundle ps-battery.exe.bundle --certificate-identity-regexp "^https://github.com/JorSanders/ps-battery/" --certificate-oidc-issuer https://token.actions.githubusercontent.com
-  ```
+- **[GitHub releases](https://github.com/JorSanders/ps-battery/releases/latest)**: download `ps-battery.exe` from the latest release. The exe is not signed, because a signing certificate costs a few hundred euros a year and this is a free hobby project. Because of that, Microsoft Defender SmartScreen blocks the first run with the warning below. Click "More info" and then "Run anyway".
 
-- **Microsoft Store**: submitted and currently under review. Once it passes certification the app is downloadable there without any warning, since the Store signs the package itself.
+  <img src="./images/smartscreen.png" alt="SmartScreen warning: Windows protected your PC" width="400" />
+
+  <img src="./images/smartscreen-run-anyway.png" alt="SmartScreen warning after clicking More info, with the Run anyway button" width="400" />
+
+You can verify that the exe in a release was built by this project's GitHub Actions workflow, and is not some other potentially malicious exe that was slipped into the release. Every release includes `ps-battery.exe.bundle`, a Sigstore signature created by the release workflow, which you can check with [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
+
+```powershell
+cosign verify-blob ps-battery.exe --bundle ps-battery.exe.bundle --certificate-identity-regexp "^https://github.com/JorSanders/ps-battery/" --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
 
 ## Local release build
 
@@ -100,3 +106,7 @@ I am a frontend/backend web developer. I have no prior experience building Windo
 ## Any issues?
 
 This is an awesome hobby project I have spent quite some hours on. If you have any issues, feel free to open a GitHub issue or contact me. Otherwise, this code is unlicensed, so do whatever you want with it: https://unlicense.org/
+
+## Buy me a coffee
+
+Don't. If you let me know you downloaded or enjoyed my app, you have already made the best donation.
